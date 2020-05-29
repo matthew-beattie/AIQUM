@@ -955,11 +955,13 @@ Function Add-UMIGroupInitiators{
       [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
       [ValidateNotNullOrEmpty()]
       [String]$Server,
-      [Parameter(Mandatory = $True, HelpMessage = "The IGroup Name")]
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Name")]
       [String]$IGroupName,
-      [Parameter(Mandatory = $True, HelpMessage = "The Cluster Name")]
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$IGroupID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
       [String]$ClusterName,
-      [Parameter(Mandatory = $True, HelpMessage = "The Vserver Name")]
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
       [String]$VserverName,
       [Parameter(Mandatory = $True, HelpMessage = "The IGroup Name")]
       [Array]$Initiators,
@@ -968,25 +970,39 @@ Function Add-UMIGroupInitiators{
       [System.Management.Automation.PSCredential]$Credential
    )
    #'---------------------------------------------------------------------------
-   #'Enumerate the IGroup Name.
+   #'Validate the input paramaters.
    #'---------------------------------------------------------------------------
-   Try{
-      $i = Get-UMIgroup -Server $Server -ClusterName $ClusterName -VserverName $VserverName -Name $IGroupName -Credential $Credential -ErrorAction Stop
-   }Catch{
-      Write-Warning "Failed enumerating IGroup ""$IGroupName"" on vserver ""$VserverName"" on cluster ""$ClusterName"""
+   [Bool]$id = $False
+   If(-Not($IGroupID)){
+      If((-Not($IGroupName)) -And (-Not($ClusterName)) -And (-Not($VserverName))){
+         Write-Warning -Message "The 'IGroupName', 'ClusterName' and 'VserverName' must be provided if the 'IGroupID' is not specified"
+         Return $Null;
+      }
+   }Else{
+      [Bool]$id = $True
    }
-   If($Null -eq $i){
-      Write-Warning -Message "The IGroup ""$IGroupName"" was not found on vserver ""$VserverName"" on cluster ""$ClusterName"""
-      Return $Null;
+   #'---------------------------------------------------------------------------
+   #'Enumerate the IGroup by Name if the resource key is not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($IgroupID)){
+      Try{
+         $i = Get-UMIgroup -Server $Server -ClusterName $ClusterName -VserverName $VserverName -Name $IGroupName -Credential $Credential -ErrorAction Stop
+      }Catch{
+         Write-Warning "Failed enumerating IGroup ""$IGroupName"" on vserver ""$VserverName"" on cluster ""$ClusterName"""
+      }
+      If($Null -eq $i){
+         Write-Warning -Message "The IGroup ""$IGroupName"" was not found on vserver ""$VserverName"" on cluster ""$ClusterName"""
+         Return $Null;
+      }
+      [String]$IGroupID = $i.records.key
    }
-   [String]$igroupID = $i.records.key
    #'---------------------------------------------------------------------------
    #'Enumerate the IGroup by ID to ensure the initiators list is the most current.
    #'---------------------------------------------------------------------------
    Try{
-      $ig = Get-UMIgroupID -Server $Server -IGroupID $igroupID -Credential $Credential -ErrorAction Stop
+      $ig = Get-UMIgroupID -Server $Server -IGroupID $IGroupID -Credential $Credential -ErrorAction Stop
    }Catch{
-      Write-Warning "Failed enumerating IGroup ID ""$igroupID"" on vserver ""$VserverName"" on cluster ""$ClusterName"""
+      Write-Warning "Failed enumerating IGroup ID ""$IGroupID"""
       Return $Null;
    }
    #'---------------------------------------------------------------------------
@@ -1001,7 +1017,7 @@ Function Add-UMIGroupInitiators{
    #'---------------------------------------------------------------------------
    #'Compare the Array of Initiators to the Hashtable of existing IQN's.
    #'---------------------------------------------------------------------------
-   [Bool]$update = $False;
+   [Bool]$update       = $False;
    [HashTable]$updates = @{};
    ForEach($iqn In $Initiators){
       If(-Not($iqns.ContainsKey($iqn))){
@@ -1016,7 +1032,7 @@ Function Add-UMIGroupInitiators{
    If($update){
       [Array]$initiatorList = $iqns.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
       [Array]$updateList    = $updates.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
-      [String]$command = $("Set-UMIGroup -Server $Server -Name " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Protocol " + $ig.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
+      [String]$command      = $("Set-UMIGroup -Server $Server -Name " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Protocol " + $ig.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
       Try{
          $igroup = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
@@ -1024,10 +1040,123 @@ Function Add-UMIGroupInitiators{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $igroup;
       }
-      Write-Host $("Added Initiators """ + $([String]::Join(",", $updateList)) + """ to IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
+      If($id){
+         Write-Host $("Added Initiators """ + $([String]::Join(",", $updateList)) + """ to IGroup ID ""$IGroupID""")
+      }Else{
+         Write-Host $("Added Initiators """ + $([String]::Join(",", $updateList)) + """ to IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
+      }
    }Else{
-      Write-Host $("The Initiators " + $([String]::Join(",", $Initiators)) + " are already added to Igroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
+      If($id){
+         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ are already added to Igroup ID ""$IGroupID""")
+      }Else{
+         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ are already added to Igroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
+      }
    }
    Return $Null;
 }#'End Function Add-UMIGroupInitiators.
+#'------------------------------------------------------------------------------
+Function Remove-UMIGroupInitiators{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Name")]
+      [String]$IGroupName,
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$IGroupID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $True, HelpMessage = "The IGroup Name")]
+      [Array]$Initiators,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Validate the input paramaters.
+   #'---------------------------------------------------------------------------
+   [Bool]$id = $False
+   If(-Not($IGroupID)){
+      If((-Not($IGroupName)) -And (-Not($ClusterName)) -And (-Not($VserverName))){
+         Write-Warning -Message "The 'IGroupName', 'ClusterName' and 'VserverName' must be provided if the 'IGroupID' is not specified"
+         Return $Null;
+      }
+   }Else{
+      [Bool]$id = $True
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the IGroup by Name if the resource key is not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($IgroupID)){
+      Try{
+         $i = Get-UMIgroup -Server $Server -ClusterName $ClusterName -VserverName $VserverName -Name $IGroupName -Credential $Credential -ErrorAction Stop
+      }Catch{
+         Write-Warning "Failed enumerating IGroup ""$IGroupName"" on vserver ""$VserverName"" on cluster ""$ClusterName"""
+      }
+      If($Null -eq $i){
+         Write-Warning -Message "The IGroup ""$IGroupName"" was not found on vserver ""$VserverName"" on cluster ""$ClusterName"""
+         Return $Null;
+      }
+      [String]$IGroupID = $i.records.key
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the IGroup by ID to ensure the initiators list is the most current.
+   #'---------------------------------------------------------------------------
+   Try{
+      $ig = Get-UMIgroupID -Server $Server -IGroupID $IGroupID -Credential $Credential -ErrorAction Stop
+   }Catch{
+      Write-Warning "Failed enumerating IGroup ID ""$IGroupID"""
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
+   #'Add the IGroup Initiators to a Hashtable for comparision.
+   #'---------------------------------------------------------------------------
+   [HashTable]$iqns = @{};
+   ForEach($iqn In $ig.initiators){
+      If(-Not($iqns.ContainsKey($iqn.name))){
+         [HashTable]$iqns.Add($iqn.name, "")
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Compare the Array of Initiators to the Hashtable of existing IQN's.
+   #'---------------------------------------------------------------------------
+   [Bool]$update       = $False;
+   [HashTable]$removed = @{};
+   ForEach($iqn In $Initiators){
+      If($iqns.ContainsKey($iqn)){
+         [HashTable]$iqns.Remove($iqn)
+         [HashTable]$removed.Add($iqn, $Null)
+         [Bool]$update = $True;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Remove the Initiators from the IGroup if they exist.
+   #'---------------------------------------------------------------------------
+   If($update){
+      [Array]$initiatorList = $iqns.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
+      [Array]$removedList   = $removed.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
+      [String]$command      = $("Set-UMIGroup -Server $Server -Name " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Protocol " + $ig.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
+      Try{
+         $igroup = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $igroup;
+      }
+      If($id){
+         Write-Host $("Removed Initiators """ + $([String]::Join(",", $removedList)) + """ from IGroup ID ""$IGroupID""")
+      }Else{
+         Write-Host $("Removed Initiators """ + $([String]::Join(",", $removedList)) + """ from IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
+      }
+   }Else{
+      If($id){
+         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ do not exist in Igroup ID ""$IGroupID""")
+      }Else{
+         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ do not exist in Igroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
+      }
+   }
+   Return $Null;
+}#'End Function Remove-UMIGroupInitiators.
 #'------------------------------------------------------------------------------
