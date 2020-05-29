@@ -984,7 +984,7 @@ Function Add-UMIGroupInitiators{
    #'Enumerate the IGroup by ID to ensure the initiators list is the most current.
    #'---------------------------------------------------------------------------
    Try{
-      $ig = Get-UMIgroup -Server $Server -IGroupID $igroupID -Credential $Credential -ErrorAction Stop
+      $ig = Get-UMIgroupID -Server $Server -IGroupID $igroupID -Credential $Credential -ErrorAction Stop
    }Catch{
       Write-Warning "Failed enumerating IGroup ID ""$igroupID"" on vserver ""$VserverName"" on cluster ""$ClusterName"""
       Return $Null;
@@ -993,7 +993,7 @@ Function Add-UMIGroupInitiators{
    #'Add the IGroup Initiators to a Hashtable for comparision.
    #'---------------------------------------------------------------------------
    [HashTable]$iqns = @{};
-   ForEach($iqn In $ig.records.initiators){
+   ForEach($iqn In $ig.initiators){
       If(-Not($iqns.ContainsKey($iqn.name))){
          [HashTable]$iqns.Add($iqn.name, "")
       }
@@ -1016,7 +1016,7 @@ Function Add-UMIGroupInitiators{
    If($update){
       [Array]$initiatorList = $iqns.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
       [Array]$updateList    = $updates.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
-      [String]$command = $("Set-UMIGroup -Server $Server -Name " + $ig.records.name + " -IGroupID '" + $ig.records.key + "' -OsType " + $ig.records.os_type + " -Protocol " + $ig.records.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
+      [String]$command = $("Set-UMIGroup -Server $Server -Name " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Protocol " + $ig.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
       Try{
          $igroup = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
