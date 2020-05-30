@@ -30,7 +30,7 @@ Function Get-UMCluster{
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster SNMP location")]
       [String]$Location,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
-      [String]$Name,
+      [String]$ClusterName,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
       [String]$Uuid,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster SNMP contact")]
@@ -76,8 +76,8 @@ Function Get-UMCluster{
       [String]$uri += "&location=$Location"
       [Bool]$query = $True
    }
-   If($Name){
-      [String]$uri += "&name=$Name"
+   If($ClusterName){
+      [String]$uri += "&name=$ClusterName"
       [Bool]$query = $True
    }
    If($Uuid){
@@ -200,7 +200,7 @@ Function Get-UMNode{
       [Parameter(Mandatory = $False, HelpMessage = "The Node Cluster name")]
       [String]$ClusterName,
       [Parameter(Mandatory = $False, HelpMessage = "The Node Cluster UUID")]
-      [String]$ClusterUuid,
+      [String]$ClusterUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
       [Int]$Offset,
       [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
@@ -358,19 +358,19 @@ Function Get-UMCifsShare{
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
       [String]$ClusterName,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
-      [String]$ClusterUuid,
+      [String]$ClusterUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$VserverID,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
       [String]$VserverName,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
-      [String]$VserverUuid,
+      [String]$VserverUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$VolumeID,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume Name")]
       [String]$VolumeName,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume UUID")]
-      [String]$VolumeUuid,
+      [String]$VolumeUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
       [Int]$Offset,
       [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
@@ -512,19 +512,19 @@ Function Get-UMExportPolicy{
       [Parameter(Mandatory = $False, HelpMessage = "The Export Policy Name")]
       [String]$Name,
       [Parameter(Mandatory = $False, HelpMessage = "The Export Policy ID")]
-      [Long]$PolicyId,
+      [Long]$PolicyID,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$ClusterID,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
       [String]$ClusterName,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
-      [String]$ClusterUuid,
+      [String]$ClusterUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$VserverID,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
       [String]$VserverName,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
-      [String]$VserverUuid,
+      [String]$VserverUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
       [Int]$Offset,
       [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
@@ -662,13 +662,13 @@ Function Get-UMIgroup{
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
       [String]$VserverName,
       [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
-      [String]$VserverUuid,
+      [String]$VserverUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$ClusterID,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
       [String]$ClusterName,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
-      [String]$ClusterUuid,
+      [String]$ClusterUuID,
       [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
       [Int]$Offset,
       [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
@@ -798,9 +798,13 @@ Function New-UMIgroup{
       [ValidateNotNullOrEmpty()]
       [String]$Server,
       [Parameter(Mandatory = $True, HelpMessage = "The IGroup Name")]
-      [String]$Name,
-      [Parameter(Mandatory = $True, HelpMessage = "The Vserver Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
-      [String]$VserverId,
+      [String]$IgroupName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
       [Parameter(Mandatory = $True, HelpMessage = "The IGroup Operating System Type. Valid values are 'aix', 'hpux', 'hyper_v', 'linux', 'netware', 'openvms', 'solaris', 'vmware', 'windows' and 'xen'")]
       [ValidateSet("aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen")]
       [String]$OsType,
@@ -814,6 +818,30 @@ Function New-UMIgroup{
       [System.Management.Automation.PSCredential]$Credential
    )
    #'---------------------------------------------------------------------------
+   #'Validate the input parameters.
+   #'---------------------------------------------------------------------------
+   If(-Not($VserverID)){
+      If((-Not($VserverName)) -And (-Not($ClusterName))){
+         Write-Warning -Message "The 'VserverName' and 'ClusterName' parameters must be provided if the 'VserverID' is not specified"
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the vserver resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($VserverID)){
+      Write-Host "Enumerating vserver resource key for Vserver ""$VserverName"" on cluster ""$ClusterName"" on server ""$Server"""
+      [String]$command = "Get-UMVserver -Server $Server -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $vserver = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $vserver;
+      }
+      [String]$VserverID = $vserver.records.key
+   }
+   #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
    $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
@@ -821,10 +849,9 @@ Function New-UMIgroup{
       "Authorization" = "Basic $auth"
       "Accept"        = "application/json"
       "Content-Type"  = "application/json"
-
    }
    #'---------------------------------------------------------------------------
-   #'Set the URI to enumerate the Igroups.
+   #'Create a hashtable for the igroup body and convert it to JSON.
    #'---------------------------------------------------------------------------
    [String]$uri       = "https://$Server/api/datacenter/protocols/san/igroups"
    [HashTable]$igroup = @{};
@@ -835,12 +862,9 @@ Function New-UMIgroup{
          [Array]$iqns    += $iqn
       }
       [HashTable]$igroup.Add("initiators", $iqns)
-   }Else{
-      [HashTable]$iqn = @{};
-      [HashTable]$igroup.Add("initiators", $iqn)
    }
    [HashTable]$vserver = @{"key" = $VserverID}
-   [HashTable]$igroup.Add("name",     $Name)
+   [HashTable]$igroup.Add("name",     $IgroupName)
    [HashTable]$igroup.Add("os_type",  $OsType)
    [HashTable]$igroup.Add("protocol", $Protocol)
    [HashTable]$igroup.Add("svm",      $vserver)
@@ -850,9 +874,17 @@ Function New-UMIgroup{
    #'---------------------------------------------------------------------------
    Try{
       $response = Invoke-RestMethod -Uri $uri -Method POST -Body $body -Headers $headers -ErrorAction Stop
-      Write-Host $("Created IGroup ""$Name"" of OS type ""$OsType"" Protocol ""$Protocol"" with initiators """ + $([String]::Join(",", $Initiators)) + """ on Vserver ID ""$VserverID"" Server ""$Server"" using URI ""$uri""")
+      If($Initiators){
+         Write-Host $("Created IGroup ""$IGroupName"" of OS type ""$OsType"" Protocol ""$Protocol"" with initiators """ + $([String]::Join(",", $Initiators)) + """ on Vserver ID ""$VserverID"" Server ""$Server"" using URI ""$uri""")
+      }Else{
+         Write-Host $("Created IGroup ""$IGroupName"" of OS type ""$OsType"" Protocol ""$Protocol"" on Vserver ID ""$VserverID"" Server ""$Server"" using URI ""$uri""")
+      }
    }Catch{
-      Write-Warning -Message $("Failed creating IGroup ""$Name"" of OS type ""$OsType"" Protocol ""$Protocol"" with initiators """ + $([String]::Join(",", $Initiators)) + """ on Vserver ID ""$VserverID""  using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      If($Initiators){
+         Write-Warning -Message $("Failed creating IGroup ""$IGroupName"" of OS type ""$OsType"" Protocol ""$Protocol"" with initiators """ + $([String]::Join(",", $Initiators)) + """ on Vserver ID ""$VserverID""  using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }Else{
+         Write-Warning -Message $("Failed creating IGroup ""$IGroupName"" of OS type ""$OsType"" Protocol ""$Protocol"" on Vserver ID ""$VserverID""  using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }
    }
    Return $response;
 }#End Function New-UMIgroup.
@@ -863,12 +895,30 @@ Function Remove-UMIgroup{
       [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
       [ValidateNotNullOrEmpty()]
       [String]$Server,
-      [Parameter(Mandatory = $True, HelpMessage = "The IGroup Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
-      [String]$IgroupId,
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Name")]
+      [String]$IGroupName,
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$IGroupID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
       [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
       [ValidateNotNullOrEmpty()]
       [System.Management.Automation.PSCredential]$Credential
    )
+   #'---------------------------------------------------------------------------
+   #'Validate the input paramaters.
+   #'---------------------------------------------------------------------------
+   [Bool]$id = $False
+   If(-Not($IGroupID)){
+      If((-Not($IGroupName)) -And (-Not($ClusterName)) -And (-Not($VserverName))){
+         Write-Warning -Message "The 'IGroupName', 'ClusterName' and 'VserverName' must be provided if the 'IGroupID' is not specified"
+         Return $Null;
+      }
+   }Else{
+      [Bool]$id = $True
+   }
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
@@ -879,14 +929,37 @@ Function Remove-UMIgroup{
       "Content-Type"  = "application/json"
    }
    #'---------------------------------------------------------------------------
+   #'Enumerate the IGroup by Name if the resource key is not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($id)){
+      Try{
+         $i = Get-UMIgroup -Server $Server -ClusterName $ClusterName -VserverName $VserverName -Name $IGroupName -Credential $Credential -ErrorAction Stop
+      }Catch{
+         Write-Warning "Failed enumerating IGroup ""$IGroupName"" on vserver ""$VserverName"" on cluster ""$ClusterName"""
+      }
+      If($Null -eq $i){
+         Write-Warning -Message "The IGroup ""$IGroupName"" was not found on vserver ""$VserverName"" on cluster ""$ClusterName"""
+         Return $Null;
+      }
+      [String]$IGroupID = $i.records.key
+   }
+   #'---------------------------------------------------------------------------
    #'Remove the IGroup.
    #'---------------------------------------------------------------------------
    [String]$uri = "https://$Server/api/datacenter/protocols/san/igroups/$IGroupID"
    Try{
       $response = Invoke-RestMethod -Uri $uri -Method DELETE -Headers $headers -ErrorAction Stop
-      Write-Host $("Removed IGroupID ""$IGroupID"" from Server ""$Server"" using URI ""$uri""")
+      If($id){
+         Write-Host "Removed IGroup ID ""$IGroupID"" from Server ""$Server"" using URI ""$uri"""
+      }Else{
+         Write-Host "Removed IGroup ""$IGroupName"" ID ""$IGroupID"" from Vserver ""$VserverName"" Cluster ""$Cluster"" on server ""$Server"" using URI ""$uri"""
+      }
    }Catch{
-      Write-Warning -Message $("Failed removing IGroupID ""$IGroupID"" from Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      If($id){
+         Write-Warning -Message $("Failed removing IGroupID ""$IGroupID"" from Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }Else{
+         Write-Warning -Message $("Failed removing IGroup ""$IGroupName"" ID ""$IGroupID"" from Vserver ""$VserverName"" Cluster ""$Cluster"" on server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }
    }
    Return $response;
 }#End Function Remove-UMIgroup.
@@ -900,7 +973,7 @@ Function Set-UMIgroup{
       [Parameter(Mandatory = $True, HelpMessage = "The IGroup Name")]
       [String]$Name,
       [Parameter(Mandatory = $True, HelpMessage = "The IGroup Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
-      [String]$IgroupId,
+      [String]$IgroupID,
       [Parameter(Mandatory = $False, HelpMessage = "The IGroup Operating System Type. Valid values are 'aix', 'hpux', 'hyper_v', 'linux', 'netware', 'openvms', 'solaris', 'vmware', 'windows' and 'xen'")]
       [ValidateSet("aix","hpux","hyper_v","linux","netware","openvms","solaris","vmware","windows","xen")]
       [String]$OsType,
@@ -1159,4 +1232,331 @@ Function Remove-UMIGroupInitiators{
    }
    Return $Null;
 }#'End Function Remove-UMIGroupInitiators.
+#'------------------------------------------------------------------------------
+Function Get-UMVserver{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuID,
+      [Parameter(Mandatory = $False, HelpMessage = "The NIS enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$NisEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The NVME enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$NvmeEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The vserver language")]
+      [ValidateSet("ar","ar.utf-8","c","c.utf-8","cs","cs.utf-8","da","da.utf-8","de","de.utf-8","en","en.utf-8","en_us","en_us.utf-8","es","es.utf-8","fi","fi.utf-8","fr","fr.utf-8","he","he.utf-8","hr","hr.utf-8","hu","hu.utf-8","it","it.utf-8","ja","ja.utf-8","ja_jp.932","ja_jp.932.utf-8","ja_jp.pck","ja_jp.pck.utf-8","ja_jp.pck_v2","ja_jp.pck_v2.utf-8","ja_v1","ja_v1.utf-8","ko","ko.utf-8","nl","nl.utf-8","no","no.utf-8","pl","pl.utf-8","pt","pt.utf-8","ro","ro.utf-8","ru","ru.utf-8","sk","sk.utf-8","sl","sl.utf-8","sv","sv.utf-8","tr","tr.utf-8","utf8mb4","zh","zh.gbk","zh.gbk.utf-8","zh.utf-8","zh_tw","zh_tw.big5","zh_tw.big5.utf-8","zh_tw.utf-8")]
+      [String]$Language,
+      [Parameter(Mandatory = $False, HelpMessage = "The NFS enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$NfsEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The vserver subtype")]
+      [ValidateSet("default","dp-destination")]
+      [String]$SubType,
+      [Parameter(Mandatory = $False, HelpMessage = "The FCP enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$FcpEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The ISCSI enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$IscsiEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The vserver name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The LDAP enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$LdapEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The vserver UUID")]
+      [String]$Uuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The CIFS Server name")]
+      [String]$CifsServer,
+      [Parameter(Mandatory = $False, HelpMessage = "The CIFS enabled status")]
+      [ValidateSet("true", "false")]
+      [String]$CifsEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The CIFS enabled status")]
+      [ValidateSet("deleting","initializing","starting","stopped","stopping","running")]
+      [String]$State,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+   }
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the vservers.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/svm/svms?"
+   [Bool]$query = $False;
+   If($VserverID){
+      [String]$uri += "&key=$VserverID"
+      [Bool]$query = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query = $True
+   }
+   If($NisEnabled){
+      [String]$uri += "&nis.enabled=$NisEnabled"
+      [Bool]$query = $True
+   }
+   If($NvmeEnabled){
+      [String]$uri += "&nvme.enabled=$NvmeEnabled"
+      [Bool]$query = $True
+   }
+   If($Language){
+      [String]$uri += $("&language=" + $Language.Replace("-", "_"))
+      [Bool]$query = $True
+   }
+   If($NfsEnabled){
+      [String]$uri += "&nfs.enabled=$NfsEnabled"
+      [Bool]$query = $True
+   }
+   If($SubType){
+      [String]$uri += $("&subtype=" + $SubType.Replace("-", "_"))
+      [Bool]$query = $True
+   }
+   If($FcpEnabled){
+      [String]$uri += "&fcp.enabled=$FcpEnabled"
+      [Bool]$query = $True
+   }
+   If($IscsiEnabled){
+      [String]$uri += "&iscsi.enabled=$IscsiEnabled"
+      [Bool]$query = $True
+   }
+   If($VserverName){
+      [String]$uri += "&name=$VserverName"
+      [Bool]$query = $True
+   }
+   If($LdapEnabled){
+      [String]$uri += "&ldap.enabled=$LdapEnabled"
+      [Bool]$query = $True
+   }
+   If($Uuid){
+      [String]$uri += "&uuid=$Uuid"
+      [Bool]$query = $True
+   }
+   If($CifsServer){
+      [String]$uri += "&cifs.name=$CifsServer"
+      [Bool]$query = $True
+   }
+   If($CifsEnabled){
+      [String]$uri += "&cifs.enabled=$CifsEnabled"
+      [Bool]$query = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If($MaxRecords){
+      [String]$uri += "&max_records=$MaxRecords"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the vservers.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Vservers on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Vservers on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#End Function Get-UMVserver.
+#'------------------------------------------------------------------------------
+Function Invoke-UMRediscover{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Validate the input parameters.
+   #'---------------------------------------------------------------------------
+   If((-Not($ClusterId)) -And (-Not($ClusterName))){
+      Write-Warning -Message "The 'ClusterId' or 'ClusterName' paramater must be provided"
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the cluster resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($ClusterId)){
+      [String]$command = "Get-UMCluster -Server $Server -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $cluster = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      [String]$ClusterId = $cluster.records.key
+   }
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/json"
+      "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Create a hashtable for the body and covert to JSON.
+   #'---------------------------------------------------------------------------
+   [String]$uri         = "https://$Server/api/management-server/admin/datasources/$ClusterId/discover"
+   [HashTable]$discover = @{"resourceKey" = $ClusterId};
+   $body = $discover | ConvertTo-Json
+   #'---------------------------------------------------------------------------
+   #'Rediscover the Cluster.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method POST -Body $body -Headers $headers -ErrorAction Stop
+      If($ClusterID){
+         Write-Host "Invoked rediscovery for Cluster ID ""$ClusterId"" on Server ""$Server"" using URI ""$uri"""
+      }Else{
+         Write-Host "Invoked rediscovery for Cluster ""$ClusterName"" on Server ""$Server"" using URI ""$uri"""
+      }
+   }Catch{
+      If($ClusterID){
+         Write-Warning -Message $("Failed Invoking rediscovery for Cluster ID ""$ClusterId"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }Else{
+         Write-Warning -Message $("Failed Invoking rediscovery for Cluster ""$ClusterName"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }
+   }
+   Return $response;
+}#End Function Invoke-UMRediscover.
+#'------------------------------------------------------------------------------
+Function Wait-UMRediscover{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Job ID")]
+      [ValidateNotNullOrEmpty()]
+      [String]$JobID,
+      [Parameter(Mandatory = $False, HelpMessage = "The maximum timeout in seconds to wait for the job to complete. Default is 300 seconds")]
+      [Int]$Timeout = 30,
+      [Parameter(Mandatory = $False, HelpMessage = "The maximum number of seconds to wait inbetween checking the job status. Default is 3 seconds")]
+      [ValidateRange(1, 60)]
+      [Int]$WaitInterval = 3,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Wait for the discovery job to complete or until the timeout is exceeded.
+   #'---------------------------------------------------------------------------
+   [Long]$waited     = 0
+   [Long]$timeWaited = $waited
+   [Bool]$rediscover = $False
+   Do{
+      [Long]$timeWaited += [Long]($waited + $waitInterval)
+      #'------------------------------------------------------------------------
+      #'Enumerate the rediscovery job.
+      #'------------------------------------------------------------------------
+      [String]$command = "Get-UMJobID -Server $Server -JobID $JobId -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $job = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command"
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $rediscover;
+      }
+      #'------------------------------------------------------------------------
+      #'Check the monitor discovery tasks within the rediscover job.
+      #'------------------------------------------------------------------------
+      If($Null -ne $job){
+         $tasks = $job.records.task_reports
+         [Int]$taskCount    = 0
+         [Int]$successCount = 0
+         ForEach($task In $tasks){
+            If($task.type -eq "monitor_discover"){
+               [Int]$taskCount++
+               If($task.state -eq 'completed' -And $task.status -eq 'normal'){
+                  [Int]$successCount++
+               }Else{
+                  Write-Host $("Job`: " + $task.key + ". Type`: " + $task.type + ". State`: " + $task.state + ". Status`: " + $task.status)
+               }
+            }
+         }
+      }Else{
+         Break;
+      }
+      If(($taskCount -eq $successCount) -And ($timeWaited -le $TimeOut) -And $TimeOut -gt 0){
+         [Bool]$discovered = $True;
+         Break;
+      }
+      Start-Sleep -Seconds $WaitInterval         
+   }Until(($taskCount -eq $successCount) -Or (($timeWaited -ge $TimeOut) -And $TimeOut -gt 0))
+   Return $discovered;
+}#End Function Wait-UMRediscover.
+#'------------------------------------------------------------------------------
+Function Get-UMJobID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Job ID")]
+      [ValidateNotNullOrEmpty()]
+      [String]$JobID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   [String]$uri = "https://$Server/api/management-server/jobs?key=$JobID"
+   #'---------------------------------------------------------------------------
+   #'Enumerate the job.
+   #'---------------------------------------------------------------------------
+   Try{
+      $job = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated job ""$JobID"" on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating job ""$JobID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message)
+   }
+   Return $job;
+}#'End Function Get-UMJobID.
 #'------------------------------------------------------------------------------
