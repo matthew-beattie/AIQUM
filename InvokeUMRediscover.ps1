@@ -76,7 +76,7 @@ If($Null -ne $rediscover){
    [Bool]$waited = $False;
 }
 #'------------------------------------------------------------------------------
-#'Display the redisovery status for the cluster.
+#'Display the rediscovery status for the cluster.
 #'------------------------------------------------------------------------------
 If($rediscover -And $waited){
    If($ClusterName){
