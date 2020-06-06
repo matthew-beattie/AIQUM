@@ -3000,7 +3000,7 @@ Function Get-UMVolume{
       [ValidateSet("mixed","ntfs","unix")]
       [String]$SecurityStyle,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume UUID")]
-      [String]$Uuid,
+      [String]$VolumeUuid,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$ClusterID,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
@@ -3081,8 +3081,8 @@ Function Get-UMVolume{
       [String]$uri += "&style=$SecurityStyle"
       [Bool]$query = $True
    }
-   If($Uuid){
-      [String]$uri += "&uuid=$Uuid"
+   If($VolumeUuid){
+      [String]$uri += "&uuid=$VolumeUuid"
       [Bool]$query = $True
    }
    If($ClusterID){
