@@ -24,8 +24,8 @@ Param(
    [ValidateSet("online","offline")]
    [String]$State,
    [Parameter(Mandatory = $False, HelpMessage = "The Volume Security Style")]
-   [ValidateSet("mixed","ntfs","unix")]
-   [String]$SecurityStyle,
+   [ValidateSet("flexvol","flexgroup")]
+   [String]$Style,
    [Parameter(Mandatory = $False, HelpMessage = "The Volume UUID")]
    [String]$VolumeUuid,
    [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
@@ -108,8 +108,8 @@ If($DateCreated){
 If($State){
    [String]$command += "-State '$State' "
 }
-If($SecurityStyle){
-   [String]$command += "-SecurityStyle '$SecurityStyle' "
+If($Style){
+   [String]$command += "-Style '$Style' "
 }
 If($VolumeUuid){
    [String]$command += "-VolumeUuid '$VolumeUuid' "
