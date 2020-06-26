@@ -130,7 +130,7 @@ Function Get-UMCluster{
       Write-Warning -Message $("Failed enumerating Clusters on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMCluster.
+}#'End Function Get-UMCluster.
 #'------------------------------------------------------------------------------
 Function Get-UMClusterID{
    [CmdletBinding()]
@@ -160,7 +160,7 @@ Function Get-UMClusterID{
       Write-Warning -Message $("Failed enumerating Cluster ID ""$ClusterID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMClusterID.
+}#'End Function Get-UMClusterID.
 #'------------------------------------------------------------------------------
 Function Get-UMNode{
    [CmdletBinding()]
@@ -297,7 +297,7 @@ Function Get-UMNode{
       Write-Warning -Message $("Failed enumerating Nodes on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMNode.
+}#'End Function Get-UMNode.
 #'------------------------------------------------------------------------------
 Function Get-UMNodeID{
    [CmdletBinding()]
@@ -327,7 +327,7 @@ Function Get-UMNodeID{
       Write-Warning -Message $("Failed enumerating Node ID ""$NodeID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMNodeID.
+}#'End Function Get-UMNodeID.
 #'------------------------------------------------------------------------------
 Function Get-UMCifsShare{
    [CmdletBinding()]
@@ -458,7 +458,7 @@ Function Get-UMCifsShare{
       Write-Warning -Message $("Failed enumerating CIFS Shares on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMCifsShare.
+}#'End Function Get-UMCifsShare.
 #'------------------------------------------------------------------------------
 Function Get-UMCifsShareID{
    [CmdletBinding()]
@@ -488,7 +488,7 @@ Function Get-UMCifsShareID{
       Write-Warning -Message $("Failed enumerating CIFS Share ID ""$ShareID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMCifsShareID.
+}#'End Function Get-UMCifsShareID.
 #'------------------------------------------------------------------------------
 Function Get-UMExportPolicy{
    [CmdletBinding()]
@@ -595,7 +595,7 @@ Function Get-UMExportPolicy{
       Write-Warning -Message $("Failed enumerating Export Policies on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMExportPolicy.
+}#'End Function Get-UMExportPolicy.
 #'------------------------------------------------------------------------------
 Function Get-UMExportPolicyID{
    [CmdletBinding()]
@@ -625,7 +625,7 @@ Function Get-UMExportPolicyID{
       Write-Warning -Message $("Failed enumerating Export Policy ID ""$ExportPolicyID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMExportPolicyID.
+}#'End Function Get-UMExportPolicyID.
 #'------------------------------------------------------------------------------
 Function Get-UMIgroup{
    [CmdletBinding()]
@@ -746,7 +746,7 @@ Function Get-UMIgroup{
       Write-Warning -Message $("Failed enumerating IGroups on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMIgroup.
+}#'End Function Get-UMIgroup.
 #'------------------------------------------------------------------------------
 Function Get-UMIgroupID{
    [CmdletBinding()]
@@ -776,7 +776,7 @@ Function Get-UMIgroupID{
       Write-Warning -Message $("Failed enumerating IGroup ID ""$IGroupID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMIgroupID.
+}#'End Function Get-UMIgroupID.
 #'------------------------------------------------------------------------------
 Function New-UMIgroup{
    [CmdletBinding()]
@@ -817,16 +817,18 @@ Function New-UMIgroup{
    #'Enumerate the vserver resource key if not provided.
    #'---------------------------------------------------------------------------
    If(-Not($VserverID)){
-      Write-Host "Enumerating vserver resource key for Vserver ""$VserverName"" on cluster ""$ClusterName"" on server ""$Server"""
-      [String]$command = "Get-UMVserver -Server $Server -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'vserver' -ObjectName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
       Try{
-         $vserver = Invoke-Expression -Command $command -ErrorAction Stop
+         [String]$VserverID = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
       }Catch{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $vserver;
       }
-      [String]$VserverID = $vserver.records.key
+      If([String]::IsNullOrEmpty($VserverID)){
+         Write-Warning -Message "Failed enumerating ID for Vserver ""$VserverName"" on Cluster ""$ClusterName"""
+         Return $Null;
+      }
    }
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
@@ -874,7 +876,7 @@ Function New-UMIgroup{
       }
    }
    Return $response;
-}#End Function New-UMIgroup.
+}#'End Function New-UMIgroup.
 #'------------------------------------------------------------------------------
 Function Set-UMIgroup{
    [CmdletBinding()]
@@ -912,15 +914,18 @@ Function Set-UMIgroup{
    #'Enumerate the igroup if the resource key was not provided.
    #'---------------------------------------------------------------------------
    If(-Not($IGroupID)){
-      [String]$command = "Get-UMIGroup -Server $Server -IGroupName $IGroupName -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'igroup' -ObjectName $IGroupName -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
       Try{
-         $i = Invoke-Expression -Command $command -ErrorAction Stop
+         [String]$IgroupID = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
       }Catch{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $Null;
       }
-      [String]$IgroupID = $i.records.key
+      If([String]::IsNullOrEmpty($IGroupID)){
+         Write-Warning -Message "Failed enumerating ID for IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName"""
+         Return $Null;
+      }
    }
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
@@ -965,7 +970,7 @@ Function Set-UMIgroup{
       }
    }
    Return $response;
-}#End Function Set-UMIgroup.
+}#'End Function Set-UMIgroup.
 #'------------------------------------------------------------------------------
 Function Remove-UMIgroup{
    [CmdletBinding()]
@@ -1040,7 +1045,7 @@ Function Remove-UMIgroup{
       }
    }
    Return $response;
-}#End Function Remove-UMIgroup.
+}#'End Function Remove-UMIgroup.
 #'------------------------------------------------------------------------------
 Function Add-UMIGroupInitiators{
    [CmdletBinding()]
@@ -1065,37 +1070,34 @@ Function Add-UMIGroupInitiators{
    #'---------------------------------------------------------------------------
    #'Validate the input paramaters.
    #'---------------------------------------------------------------------------
-   [Bool]$id = $False
    If(-Not($IGroupID)){
       If((-Not($IGroupName)) -And (-Not($ClusterName)) -And (-Not($VserverName))){
          Write-Warning -Message "The 'IGroupName', 'ClusterName' and 'VserverName' must be provided if the 'IGroupID' is not specified"
          Return $Null;
       }
-   }Else{
-      [Bool]$id = $True
    }
    #'---------------------------------------------------------------------------
    #'Enumerate the IGroup by Name if the resource key is not provided.
    #'---------------------------------------------------------------------------
+   [String]$id = $Null
    If(-Not($IgroupID)){
-      [String]$command = "Get-UMIgroup -Server $Server -ClusterName $ClusterName -VserverName $VserverName -IGroupName $IGroupName -Credential `$Credential -ErrorAction Stop"
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'igroup' -ObjectName $IGroupName -ClusterName $ClusterName -VserverName $VserverName -Credential `$Credential -ErrorAction Stop"
       Try{
-         $i = Invoke-Expression -Command $command -ErrorAction Stop
+         [String]$IGroupID = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command"
       }Catch{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $Null;
       }
-      If($Null -eq $i){
-         Write-Warning -Message "The IGroup ""$IGroupName"" was not found on vserver ""$VserverName"" on cluster ""$ClusterName"""
+      If([String]::IsNullOrEmpty($IGroupID)){
+         Write-Warning -Message "Failed enumerating ID for IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName"""
          Return $Null;
       }
-      [String]$IGroupID = $i.records.key
    }
    #'---------------------------------------------------------------------------
    #'Enumerate the IGroup by ID to ensure the initiators list is the most current.
    #'---------------------------------------------------------------------------
-   [String]$command = "Get-UMIgroupID -Server $Server -IGroupID $IGroupID -Credential `$Credential -ErrorAction Stop"
+   [String]$command = "Get-UMIgroupID -Server $Server -IGroupID '$IGroupID' -Credential `$Credential -ErrorAction Stop"
    Try{
       $ig = Invoke-Expression -Command $command -ErrorAction Stop
       Write-Host "Executed Command`: $command" -ForegroundColor Cyan
@@ -1130,7 +1132,7 @@ Function Add-UMIGroupInitiators{
    If($update){
       [Array]$initiatorList = $iqns.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
       [Array]$updateList    = $updates.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
-      [String]$command      = $("Set-UMIGroup -Server $Server -IGroupName " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Protocol " + $ig.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
+      [String]$command      = $("Set-UMIGroup -Server $Server -IGroupName " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
       Try{
          $igroup = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
@@ -1138,17 +1140,9 @@ Function Add-UMIGroupInitiators{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $igroup;
       }
-      If($id){
-         Write-Host $("Added Initiators """ + $([String]::Join(",", $updateList)) + """ to IGroup ID ""$IGroupID""")
-      }Else{
-         Write-Host $("Added Initiators """ + $([String]::Join(",", $updateList)) + """ to IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
-      }
+      Write-Host $("Added Initiators """ + $([String]::Join(",", $updateList)) + """ to IGroup ""$IGroupName"" ID ""$IgroupID"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
    }Else{
-      If($id){
-         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ are already added to Igroup ID ""$IGroupID""")
-      }Else{
-         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ are already added to Igroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
-      }
+      Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ are already added to Igroup ""$IGroupName"" ID ""$IGroupID"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
    }
    Return $Null;
 }#'End Function Add-UMIGroupInitiators.
@@ -1176,37 +1170,33 @@ Function Remove-UMIGroupInitiators{
    #'---------------------------------------------------------------------------
    #'Validate the input paramaters.
    #'---------------------------------------------------------------------------
-   [Bool]$id = $False
    If(-Not($IGroupID)){
       If((-Not($IGroupName)) -And (-Not($ClusterName)) -And (-Not($VserverName))){
          Write-Warning -Message "The 'IGroupName', 'ClusterName' and 'VserverName' must be provided if the 'IGroupID' is not specified"
          Return $Null;
       }
-   }Else{
-      [Bool]$id = $True
    }
    #'---------------------------------------------------------------------------
    #'Enumerate the IGroup by Name if the resource key is not provided.
    #'---------------------------------------------------------------------------
    If(-Not($IgroupID)){
-      [String]$command = "Get-UMIgroup -Server $Server -ClusterName $ClusterName -VserverName $VserverName -IGroupName $IGroupName -Credential `$Credential -ErrorAction Stop"
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'igroup' -ObjectName $IGroupName -ClusterName $ClusterName -VserverName $VserverName -Credential `$Credential -ErrorAction Stop"
       Try{
-         $i = Invoke-Expression -Command $command -ErrorAction Stop
+         [String]$IGroupID = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command"
       }Catch{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $Null;
       }
-      If($Null -eq $i){
-         Write-Warning -Message "The IGroup ""$IGroupName"" was not found on vserver ""$VserverName"" on cluster ""$ClusterName"""
+      If([String]::IsNullOrEmpty($IGroupID)){
+         Write-Warning -Message "Failed enumerating ID for IGroup ""$IGroupName"" on Vserver ""$VserverName"" on cluster ""$ClusterName"""
          Return $Null;
       }
-      [String]$IGroupID = $i.records.key
    }
    #'---------------------------------------------------------------------------
    #'Enumerate the IGroup by ID to ensure the initiators list is the most current.
    #'---------------------------------------------------------------------------
-   [String]$command = "Get-UMIgroupID -Server $Server -IGroupID $IGroupID -Credential `$Credential -ErrorAction Stop"
+   [String]$command = "Get-UMIgroupID -Server $Server -IGroupID '$IGroupID' -Credential `$Credential -ErrorAction Stop"
    Try{
       $ig = Invoke-Expression -Command $command -ErrorAction Stop
       Write-Host "Executed Command`: $command" -ForegroundColor Cyan
@@ -1241,7 +1231,7 @@ Function Remove-UMIGroupInitiators{
    If($update){
       [Array]$initiatorList = $iqns.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
       [Array]$removedList   = $removed.GetEnumerator() | Sort-Object -Property Name | Select-Object -ExpandProperty Name
-      [String]$command      = $("Set-UMIGroup -Server $Server -IGroupName " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Protocol " + $ig.protocol + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
+      [String]$command      = $("Set-UMIGroup -Server $Server -IGroupName " + $ig.name + " -IGroupID '" + $ig.key + "' -OsType " + $ig.os_type + " -Initiators `$initiatorList -Credential `$Credential -ErrorAction Stop")
       Try{
          $igroup = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
@@ -1249,17 +1239,9 @@ Function Remove-UMIGroupInitiators{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $igroup;
       }
-      If($id){
-         Write-Host $("Removed Initiators """ + $([String]::Join(",", $removedList)) + """ from IGroup ID ""$IGroupID""")
-      }Else{
-         Write-Host $("Removed Initiators """ + $([String]::Join(",", $removedList)) + """ from IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
-      }
+      Write-Host $("Removed Initiators """ + $([String]::Join(",", $removedList)) + """ from IGroup ""$IGroupName"" ID ""$IGroupID"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
    }Else{
-      If($id){
-         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ do not exist in Igroup ID ""$IGroupID""")
-      }Else{
-         Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ do not exist in Igroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
-      }
+      Write-Host $("The Initiators """ + $([String]::Join(",", $Initiators)) + """ do not exist in Igroup ""$IGroupName"" ID ""$IGroupID"" on Vserver ""$VserverName"" on Cluster ""$ClusterName""")
    }
    Return $Null;
 }#'End Function Remove-UMIGroupInitiators.
@@ -1423,7 +1405,37 @@ Function Get-UMVserver{
       Write-Warning -Message $("Failed enumerating Vservers on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMVserver.
+}#'End Function Get-UMVserver.
+#'------------------------------------------------------------------------------
+Function Get-UMVserverID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the vserver.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/svm/svms/$VserverID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Vserver on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Vserver on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMVserverID.
 #'------------------------------------------------------------------------------
 Function Invoke-UMRediscover{
    [CmdletBinding()]
@@ -1450,15 +1462,18 @@ Function Invoke-UMRediscover{
    #'Enumerate the cluster resource key if not provided.
    #'---------------------------------------------------------------------------
    If(-Not($ClusterId)){
-      [String]$command = "Get-UMCluster -Server $Server -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType cluster -ObjectName $ClusterName -Credential `$Credential -ErrorAction Stop"
       Try{
-         $cluster = Invoke-Expression -Command $command -ErrorAction Stop
+         [String]$ClusterId = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
       }Catch{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $Null;
       }
-      [String]$ClusterId = $cluster.records.key
+      If([String]::IsNullOrEmpty($ClusterID)){
+         Write-Warning -Message "Failed enumerating ID for cluster ""$ClusterName"""
+         Return $Null;
+      }
    }
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
@@ -1493,7 +1508,7 @@ Function Invoke-UMRediscover{
       }
    }
    Return $response;
-}#End Function Invoke-UMRediscover.
+}#'End Function Invoke-UMRediscover.
 #'------------------------------------------------------------------------------
 Function Wait-UMRediscover{
    [CmdletBinding()]
@@ -1559,7 +1574,70 @@ Function Wait-UMRediscover{
       Start-Sleep -Seconds $WaitInterval         
    }Until(($taskCount -eq $successCount) -Or (($timeWaited -ge $TimeOut) -And $TimeOut -gt 0))
    Return $discovered;
-}#End Function Wait-UMRediscover.
+}#'End Function Wait-UMRediscover.
+#'------------------------------------------------------------------------------
+Function Wait-UMJobID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Job ID")]
+      [ValidateNotNullOrEmpty()]
+      [String]$JobID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Desired Job Status")]
+      [String]$DesiredStatus="normal",
+      [Parameter(Mandatory = $False, HelpMessage = "The Desired Job State")]
+      [String]$DesiredState="completed",
+      [Parameter(Mandatory = $False, HelpMessage = "The maximum timeout in seconds to wait for the job to complete. Default is 300 seconds")]
+      [Int]$Timeout = 30,
+      [Parameter(Mandatory = $False, HelpMessage = "The maximum number of seconds to wait inbetween checking the job status. Default is 3 seconds")]
+      [ValidateRange(1, 60)]
+      [Int]$WaitInterval = 3,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Wait for the job to reach the desired State and Status or until the timeout is exceeded.
+   #'---------------------------------------------------------------------------
+   [Long]$waited     = 0
+   [Long]$timeWaited = $waited
+   [Bool]$isComplete = $False
+   Do{
+      [Long]$timeWaited += [Long]($waited + $waitInterval)
+      #'------------------------------------------------------------------------
+      #'Enumerate the rediscovery job.
+      #'------------------------------------------------------------------------
+      [String]$command = "Get-UMJobID -Server $Server -JobID $JobId -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $job = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command"
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $isComplete;
+      }
+      #'------------------------------------------------------------------------
+      #'Check the job status and state.
+      #'------------------------------------------------------------------------
+      If($Null -ne $job){
+         If(($job.status -eq $DesiredStatus) -And ($job.state -eq $DesiredState)){
+            [Bool]$isComplete = $True
+         }ElseIf(($job.status -ne "normal") -And ($job.state -eq "completed")){
+            Break;
+         }Else{
+            Write-Host $("Job`: " + $job.key + ". Status`: " + $job.status + ". State`: " + $job.state)
+         }
+      }Else{
+         Return $False;
+      }
+      If(($icComplete) -And ($timeWaited -le $TimeOut) -And $TimeOut -gt 0){
+         Break;
+      }
+      Start-Sleep -Seconds $WaitInterval         
+   }Until(($isComplete) -Or (($timeWaited -ge $TimeOut) -And $TimeOut -gt 0))
+   Return $isComplete;
+}#'End Function Wait-UMJobID.
 #'------------------------------------------------------------------------------
 Function Get-UMJob{
    [CmdletBinding()]
@@ -1712,15 +1790,18 @@ Function Set-UMDatasourcePassword{
    #'Enumerate the cluster resource key if not provided.
    #'---------------------------------------------------------------------------
    If(-Not($ClusterId)){
-      [String]$command = "Get-UMCluster -Server $Server -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'cluster' -ObjectName $ClusterName -Credential `$Credential -ErrorAction Stop"
       Try{
-         $cluster = Invoke-Expression -Command $command -ErrorAction Stop
+         [String]$ClusterId = Invoke-Expression -Command $command -ErrorAction Stop
          Write-Host "Executed Command`: $command" -ForegroundColor Cyan
       }Catch{
          Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
          Return $Null;
       }
-      [String]$ClusterId = $cluster.records.key
+      If([String]::IsNullOrEmpty($ClusterID)){
+         Write-Warning -Message "Failed enumerating ID for cluster ""$ClusterName"""
+         Return $Null;
+      }
    }
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
@@ -1759,7 +1840,7 @@ Function Set-UMDatasourcePassword{
       }
    }
    Return $response;
-}#End Function Set-UMDatasourcePassword.
+}#'End Function Set-UMDatasourcePassword.
 #'------------------------------------------------------------------------------
 Function Get-UMDatasource{
    [CmdletBinding()]
@@ -1789,7 +1870,7 @@ Function Get-UMDatasource{
       Write-Warning -Message $("Failed enumerating Datasources on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMDatasource.
+}#'End Function Get-UMDatasource.
 #'------------------------------------------------------------------------------
 Function Get-UMDatasourceID{
    [CmdletBinding()]
@@ -1821,7 +1902,7 @@ Function Get-UMDatasourceID{
       Write-Warning -Message $("Failed enumerating Datasource ID ""$DatasourceID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMDatasourceID.
+}#'End Function Get-UMDatasourceID.
 #'------------------------------------------------------------------------------
 Function Add-UMDatasource{
    [CmdletBinding()]
@@ -1874,7 +1955,7 @@ Function Add-UMDatasource{
       Write-Warning -Message $("Failed adding datasource ""$Hostname"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Add-UMDatasource.
+}#'End Function Add-UMDatasource.
 #'------------------------------------------------------------------------------
 Function Remove-UMDatasource{
    [CmdletBinding()]
@@ -1987,7 +2068,7 @@ Function Get-UMDataRetention{
       Write-Warning -Message $("Failed enumerating Data Retention on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMDataRetention.
+}#'End Function Get-UMDataRetention.
 #'------------------------------------------------------------------------------
 Function Set-UMDataRetention{
    [CmdletBinding()]
@@ -2115,7 +2196,7 @@ Function Get-UMUser{
       Write-Warning -Message $("Failed enumerating Users on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMUser.
+}#'End Function Get-UMUser.
 #'------------------------------------------------------------------------------
 Function Get-UMUsername{
    [CmdletBinding()]
@@ -2145,7 +2226,7 @@ Function Get-UMUsername{
       Write-Warning -Message $("Failed enumerating User ""$Username"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMUsername.
+}#'End Function Get-UMUsername.
 #'------------------------------------------------------------------------------
 Function New-UMUser{
    [CmdletBinding()]
@@ -2218,7 +2299,7 @@ Function New-UMUser{
       Write-Warning -Message $("Failed creating User ""$username"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function New-UMUser.
+}#'End Function New-UMUser.
 #'------------------------------------------------------------------------------
 Function Set-UMUser{
    [CmdletBinding()]
@@ -2282,7 +2363,7 @@ Function Set-UMUser{
       Write-Warning -Message $("Failed updating User ""$username"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Set-UMUser.
+}#'End Function Set-UMUser.
 #'------------------------------------------------------------------------------
 Function Remove-UMUser{
    [CmdletBinding()]
@@ -2319,19 +2400,27 @@ Function Remove-UMUser{
    Return $True;
 }#'End Function Remove-UMDatasource.
 #'------------------------------------------------------------------------------
-Function New-UMLunMapID{
+Function New-UMLunMap{
    [CmdletBinding()]
    Param(
       [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
       [ValidateNotNullOrEmpty()]
       [String]$Server,
-      [Parameter(Mandatory = $True, HelpMessage = "The LUN resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [Parameter(Mandatory = $False, HelpMessage = "The LUN resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$LunID,
-      [Parameter(Mandatory = $True, HelpMessage = "The IGroup resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [Parameter(Mandatory = $False, HelpMessage = "The LUN Path")]
+      [String]$LunPath,
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$IGroupID,
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Name")]
+      [String]$IGroupName,
       [Parameter(Mandatory = $False, HelpMessage = "The LUN Logical Unit Number")]
       [ValidateRange(0, 4095)]
       [Int]$ID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
       [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
       [ValidateNotNullOrEmpty()]
       [System.Management.Automation.PSCredential]$Credential
@@ -2344,6 +2433,46 @@ Function New-UMLunMapID{
       "Authorization" = "Basic $auth"
       "Accept"        = "application/json"
       "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the LUN Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($LunID)) -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'lun' -ObjectName $LunPath -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$LunID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($LunID)){
+         Write-Warning -Message "Failed enumerating LUN ""$LunPath"" on Vserver ""$VserverName"" on Cluster ""$ClusterName"""
+         Return $Null;
+      }
+   }Else{
+      Write-Warning -Message "The 'LunPath', 'VserverName' and 'ClusterName' parameters must be provided if the 'LunID' is not specified"
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the IGroup Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($IGroupID)) -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'igroup' -ObjectName $IGroupName -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$IGroupID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($IGroupID)){
+         Write-Warning -Message "Failed enumerating IGroup ""$IGroupName"" on Vserver ""$VserverName"" on Cluster ""$ClusterName"""
+         Return $Null;
+      }
+   }Else{
+      Write-Warning -Message "The 'IGroupName', 'VserverName' and 'ClusterName' parameters must be provided if the 'IGroupID' is not specified"
+      Return $Null;
    }
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
@@ -2374,25 +2503,35 @@ Function New-UMLunMapID{
       Write-Warning -Message $("Failed mapping " + $message + ". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Add-UMLunMapID.
+}#'End Function Add-UMLunMap.
 #'------------------------------------------------------------------------------
-Function Set-UMLunID{
+Function Set-UMLun{
    [CmdletBinding()]
    Param(
       [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
       [ValidateNotNullOrEmpty()]
       [String]$Server,
-      [Parameter(Mandatory = $True, HelpMessage = "The LUN resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [Parameter(Mandatory = $False, HelpMessage = "The LUN resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$LunID,
+      [Parameter(Mandatory = $False, HelpMessage = "The LUN Path")]
+      [String]$LunPath,
       [Parameter(Mandatory = $False, HelpMessage = "The LUN state. Valid values are 'online' or 'offline'")]
       [ValidateSet("online","offline")]
       [String]$State,
       [Parameter(Mandatory = $False, HelpMessage = "The LUN Size in GigaBytes")]
       [Int]$SizeGB,
       [Parameter(Mandatory = $False, HelpMessage = "The Performance Service Level resource key. The syntax is: '<uuid>'")]
-      [String]$PerformanceServiceLevelID,
-      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ServiceLevelID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Performance Service Level name")]
+      [String]$ServiceLevelName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy resource key. The syntax is: '<uuid>'")]
       [String]$EfficiencyPolicyID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy name")]
+      [String]$EfficiencyPolicyName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
       [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
       [ValidateNotNullOrEmpty()]
       [System.Management.Automation.PSCredential]$Credential
@@ -2407,6 +2546,84 @@ Function Set-UMLunID{
       "Content-Type"  = "application/json"
    }
    #'---------------------------------------------------------------------------
+   #'Enumerate the LUN Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   [Int]$counter = 0
+   If((-Not($LunID)) -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'lun' -ObjectName $LunPath -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$LunID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($LunID)){
+         Write-Warning -Message "Failed enumerating LUN ""$LunPath"" on Vserver ""$VserverName"" on Cluster ""$ClusterName"""
+         Return $Null;
+      }
+   }Else{
+      Write-Warning -Message "The 'LunPath', 'VserverName' and 'ClusterName' parameters must be provided if the 'LunID' is not specified"
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
+   #'Ensure the current LUN size is not less than the new size.
+   #'---------------------------------------------------------------------------
+   If($SizeGB){
+      [String]$command = "Get-UMLunID -Server $Server -LunID '$LunID' -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $lun = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If($Null -ne $lun){
+         [Int]$lunSizeGB = ($lun.space.size / (1024 * 1024 * 1024))
+         If($SizeGb -lt $lunSizeGB){
+            Write-Warning -Message "The current LUN size is $lunSizeGB`GB. It can not be decreased to $SizeGB`GB"
+            Return $Null;
+         }
+      }Else{
+         Write-Warning -Message "Failed Enumerating LUN ID ""$LunID"" on server ""$Server"""
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Performance Service Level Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($ServiceLevelID)) -And $ServiceLevelName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'service-level' -ObjectName '$ServiceLevelName' -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$ServiceLevelID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($ServiceLevelID)){
+         Write-Warning -Message "Failed enumerating Performance Service Level ""$ServiceLevelName"" on Server ""$Server"""
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Efficiency Policy Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($EfficiencyPolicyID)) -And $EfficiencyPolicyName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'efficiency-policy' -ObjectName '$EfficiencyPolicyName' -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$EfficiencyPolicyID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($EfficiencyPolicyID)){
+         Write-Warning -Message "Failed enumerating Storage Efficiency Policy ""$EfficiencyPolicyName"" on Server ""$Server"""
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
    [String]$uri    = "https://$Server/api/storage-provider/luns/$LunID"
@@ -2415,25 +2632,34 @@ Function Set-UMLunID{
    If($State){
       [HashTable]$lun.Add("operational_state", $State)
       [Bool]$update = $True
+      [Int]$counter = $counter + 1
    }
-   If($PerformanceServiceLevelID){
-      [HashTable]$serviceLevel = @{"key" = $PerformanceServiceLevelID};
+   If($ServiceLevelID){
+      [HashTable]$serviceLevel = @{"key" = $ServiceLevelID};
       [HashTable]$lun.Add("performance_service_level", $serviceLevel)
       [Bool]$update = $True
+      [Int]$counter = $counter + 1
    }
    If($SizeGB){
       [HashTable]$space = @{"size" = ($SizeGB * (1024 * 1024 * 1024))};
       [HashTable]$lun.Add("space", $space)
       [Bool]$update = $True
+      [Int]$counter = $counter + 1
    }
    If($EfficiencyPolicyID){
       [HashTable]$policy = @{"key" = $EfficiencyPolicyID};
       [HashTable]$lun.Add("storage_efficiency_policy", $policy)
       [Bool]$update = $True
+      [Int]$counter = $counter + 1
    }
    If(-Not($update)){
       Write-Host "The LUN ID ""$LunID"" was not been modified. Please provide valid input parameters"
       Return $Null;
+   }Else{
+      If($counter -ne 1){
+         Write-Warning -Message "You can only update one property at a time"
+         Return $Null;
+      }
    }
    $body = $lun | ConvertTo-Json
    #'---------------------------------------------------------------------------
@@ -2446,8 +2672,8 @@ Function Set-UMLunID{
    If($SizeGB){
       [String]$message += "Size ""$SizeGB`GB"" "
    }
-   If($PerformanceServiceLevelID){
-      [String]$message += "Performance Service Level ID ""$PerformanceServiceLevelID"" "
+   If($ServiceLevelID){
+      [String]$message += "Performance Service Level ID ""$ServiceLevelID"" "
    }
    If($EfficiencyPolicyID){
       [String]$message += "Efficiency Policy ID ""$EfficiencyPolicyID"" "
@@ -2460,7 +2686,7 @@ Function Set-UMLunID{
       Write-Warning -Message $("Failed setting " + $message + ". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Set-UMLunID.
+}#'End Function Set-UMLun.
 #'------------------------------------------------------------------------------
 Function Get-UMLun{
    [CmdletBinding()]
@@ -2542,7 +2768,11 @@ Function Get-UMLun{
       [Bool]$isQuery = $True
    }
    If($LunName){
-      [String]$uri  += "&name=$LunName"
+      If($LunName.Contains("/")){
+         [String]$uri  += "&name=$LunName"
+      }Else{
+         [String]$uri  += "&name=*$LunName"
+      }
       [Bool]$isQuery = $True
    }
    If($LunUuid){
@@ -2657,7 +2887,7 @@ Function Get-UMLun{
       Write-Warning -Message $("Failed enumerating LUNs on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMLun.
+}#'End Function Get-UMLun.
 #'------------------------------------------------------------------------------
 Function Get-UMLunID{
    [CmdletBinding()]
@@ -2687,9 +2917,9 @@ Function Get-UMLunID{
       Write-Warning -Message $("Failed enumerating LUN ID ""$LunID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMLunID.
+}#'End Function Get-UMLunID.
 #'------------------------------------------------------------------------------
-Function Remove-UMLunID{
+Function Remove-UMLun{
    [CmdletBinding()]
    Param(
       [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
@@ -2697,6 +2927,12 @@ Function Remove-UMLunID{
       [String]$Server,
       [Parameter(Mandatory = $False, HelpMessage = "The LUN resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$LunID,
+      [Parameter(Mandatory = $False, HelpMessage = "The LUN Path")]
+      [String]$LunPath,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
       [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
       [ValidateNotNullOrEmpty()]
       [System.Management.Automation.PSCredential]$Credential
@@ -2711,6 +2947,26 @@ Function Remove-UMLunID{
       "Content-Type"  = "application/json"
    }
    #'---------------------------------------------------------------------------
+   #'Enumerate the LUN Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($LunID)) -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'lun' -ObjectName $LunPath -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$LunID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($LunID)){
+         Write-Warning -Message "Failed enumerating LUN ""$LunPath"" on Vserver ""$VserverName"" on Cluster ""$ClusterName"""
+         Return $Null;
+      }
+   }Else{
+      Write-Warning -Message "The 'LunPath', 'VserverName' and 'ClusterName' parameters must be provided if the 'LunID' is not specified"
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
    #'Remove the LUN.
    #'---------------------------------------------------------------------------
    [String]$uri = "https://$Server/api/storage-provider/luns/$LunID"
@@ -2719,10 +2975,9 @@ Function Remove-UMLunID{
       Write-Host "Deleted LUN ID ""$LunID"" on Server ""$Server"" using URI ""$uri"""
    }Catch{
       Write-Warning -Message $("Failed deleting LUN ID ""$LunID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
-      Return $False;
    }
-   Return $True;
-}#'End Function Remove-UMLunID.
+   Return $response;
+}#'End Function Remove-UMLun.
 #'------------------------------------------------------------------------------
 Function New-UMLun{
    [CmdletBinding()]
@@ -2742,16 +2997,26 @@ Function New-UMLun{
       [Int]$ID,
       [Parameter(Mandatory = $False, HelpMessage = "The IGroup resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$IGroupID,
-      [Parameter(Mandatory = $True, HelpMessage = "The Performance Service Level resource key. The syntax is: '<uuid>'")]
-      [String]$PerformanceServiceLevelID,
-      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [Parameter(Mandatory = $False, HelpMessage = "The IGroup Name")]
+      [String]$IGroupName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Performance Service Level resource key. The syntax is: '<uuid>'")]
+      [String]$ServiceLevelID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Performance Service Name")]
+      [String]$ServiceLevelName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy resource key. The syntax is: '<uuid>'")]
       [String]$EfficiencyPolicyID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy Name")]
+      [String]$EfficiencyPolicyName,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$VolumeID,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume Name")]
       [String]$VolumeName,
-      [Parameter(Mandatory = $True, HelpMessage = "The Vserver resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver resource key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
       [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
       [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
       [ValidateNotNullOrEmpty()]
       [System.Management.Automation.PSCredential]$Credential
@@ -2764,6 +3029,89 @@ Function New-UMLun{
       "Authorization" = "Basic $auth"
       "Accept"        = "application/json"
       "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Validate the input parameters.
+   #'---------------------------------------------------------------------------
+   If(-Not($ServiceLevelID)){
+      If(-Not($ServiceLevelName)){
+         Write-Warning -Message "The 'ServiceLevelName' parameter parameter must be provided if the 'ServiceLevelID' parameter is not specified"
+         Return $Null;
+      }
+   }
+   If(-Not($VserverID)){
+      If((-Not($VserverName)) -And (-Not($ClusterName))){
+         Write-Warning -Message "The 'VserverName' and 'ClusterName' parameters must be provided if the 'VserverID' parameter is not specified"
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Serivce Level Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($ServiceLevelID)){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'service-level' -ObjectName $ServiceLevelName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$ServiceLevelID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($ServiceLevelID)){
+         Write-Warning -Message "Failed enumerating Performance Service Level ""$ServiceLevelName"""
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Vserver Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($VserverID)) -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'vserver' -ObjectName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$VserverID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($VserverID)){
+         Write-Warning -Message "Failed enumerating Vserver ""$VserverName"" on cluster ""$ClusterName"""
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the IGroup Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($IGroupID)) -And $IGroupName -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'igroup' -ObjectName $IGroupName -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$IGroupID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($IGroupID)){
+         Write-Warning -Message "Failed enumerating Vserver ""$VserverName"" on cluster ""$ClusterName"""
+         Return $Null;
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Storage Efficency Policy Resource key if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($EfficiencyPolicyID)) -And $EfficiencyPolicyName){
+      [String]$command = "Get-UMObjectID -Server $Server -ObjectType 'efficiency-policy' -ObjectName $EfficiencyPolicyName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         [String]$EfficiencyPolicyID = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If([String]::IsNullOrEmpty($EfficiencyPolicyID)){
+         Write-Warning -Message "Failed enumerating ID for Storage EfficiencyPolicy ""$EfficiencyPolicyName"""
+         Return $Null;
+      }
    }
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
@@ -2786,7 +3134,7 @@ Function New-UMLun{
    }
    [HashTable]$lun.Add("name", $LunName)
    [HashTable]$lun.Add("os_type", $OsType)
-   [HashTable]$serviceLevel = @{"key" = $PerformanceServiceLevelID}
+   [HashTable]$serviceLevel = @{"key" = $ServiceLevelID}
    [HashTable]$lun.Add("performance_service_level", $serviceLevel)
    [HashTable]$space = @{"size" = $($SizeGB * (1024 * 1024 * 1024))}
    [HashTable]$lun.Add("space", $space)
@@ -2810,7 +3158,7 @@ Function New-UMLun{
    #'---------------------------------------------------------------------------
    #'Create the LUN.
    #'---------------------------------------------------------------------------
-   [String]$message += "LUN ""$LunName"" of size ""$SizeGB`GB"" of OS Type ""$OsType"" on VserverID ""$VserverID"" of Performance Service Level ""$PerformanceServiceLevelID"" "
+   [String]$message += "LUN ""$LunName"" of size ""$SizeGB`GB"" of OS Type ""$OsType"" on VserverID ""$VserverID"" of Performance Service Level ""$ServiceLevelID"" "
    If($VolumeID){
       [String]$message += "on volume ID ""$VolumeID"" "
    }
@@ -2822,12 +3170,65 @@ Function New-UMLun{
    }
    [String]$message += "on Server ""$Server"" using URI ""$uri"""
    Try{
-      $response = Invoke-RestMethod -Uri $uri -Method POST -Body $body -Headers $headers -ErrorAction Stop
+      $job = Invoke-RestMethod -Uri $uri -Method POST -Body $body -Headers $headers -ErrorAction Stop
       Write-Host $("Created " + $message)
    }Catch{
       Write-Warning -Message $("Failed creating " + $message + ". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
-   Return $response;
+   #'---------------------------------------------------------------------------
+   #'Wait for the LUN creation Job to complete.
+   #'---------------------------------------------------------------------------
+   If($Null -eq $Job){
+      Write-Warning -Message "Failed creating $message"
+      Return $Null;
+   }
+   [String]$command = "Wait-UMJobID -Server $Server -JobID """ + $job.job.key + """ -Credential `$Credential -ErrorAction Stop"
+   Try{
+      $jobComplete = Invoke-Expression -Command $command -ErrorAction Stop
+      Write-Host "Executed Command`: $command"
+   }Catch{
+      Write-Warning -Message $("Failed Executing command`: $command. Error " + $_.Exception.Message)
+   }
+   If(-Not($jobComplete)){
+      Write-Warning $("Failed waiting for job """ + $job.job.key + """ on server ""$Server""")
+      Return $job;
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the completed LUN creation Job.
+   #'---------------------------------------------------------------------------
+   [String]$command = "Get-UMJobID -Server $Server -JobID """ + $job.job.key + """ -Credential `$Credential -ErrorAction Stop"
+   Try{
+      $j = Invoke-Expression -Command $command -ErrorAction Stop
+      Write-Host "Executed Command`: $command"
+   }Catch{
+      Write-Warning -Message $("Failed Executing command`: $command. Error " + $_.Exception.Message)
+      Return $j;
+   }
+   If($VolumeName -And $ClusterName -And (-Not($VolumeID))){
+      [String]$id = $j.job_results | Where-Object {$_.name -eq "volumeKey"} | Select-Object -ExpandProperty value
+      If([String]::IsNullOrEmpty($id)){
+         Write-Warning -Message $("Failed Enumerating Volume ID from Job ID """ + $j.key + """")
+         Return $j;
+      }
+      If(-Not($id.Contains("="))){
+         Write-Warning -Message $("The Volume ID ""$id"" is invalid in Job ID """ + $j.key + """")
+         Return $j;
+      }
+      [String]$uuid    = $id.SubString($id.LastIndexOf("=") + 1)
+      [String]$command = "Rename-UMVolume -Server $Server -VolumeUuid ""$uuid"" -NewVolumeName ""$VolumeName"" -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $rj = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command"
+      }Catch{
+         Write-Warning -Message $("Failed Executing command`: $command. Error " + $_.Exception.Message)
+         Return $j;
+      }
+      If($Null -eq $rj){
+         Write-Warning -Message "Failed renaming Volume ID ""$id"" to ""$VolumeName"""
+         Return $j;
+      }
+   }
+   Return $j;
 }#'End Function New-UMLun.
 #'------------------------------------------------------------------------------
 Function Get-UMEventID{
@@ -2863,7 +3264,7 @@ Function Get-UMEventID{
    }Else{
       Return $response.EventList.Event;
    }
-}#End Function Get-UMEventID.
+}#'End Function Get-UMEventID.
 #'------------------------------------------------------------------------------
 Function Set-UMEventID{
    [CmdletBinding()]
@@ -2996,9 +3397,9 @@ Function Get-UMVolume{
       [Parameter(Mandatory = $False, HelpMessage = "The Volume State")]
       [ValidateSet("online","offline")]
       [String]$State,
-      [Parameter(Mandatory = $False, HelpMessage = "The Volume Security Style")]
-      [ValidateSet("mixed","ntfs","unix")]
-      [String]$SecurityStyle,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume Style")]
+      [ValidateSet("flexvol","flexgroup")]
+      [String]$Style,
       [Parameter(Mandatory = $False, HelpMessage = "The Volume UUID")]
       [String]$VolumeUuid,
       [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
@@ -3077,8 +3478,8 @@ Function Get-UMVolume{
       [String]$uri += "&state=$State"
       [Bool]$query = $True
    }
-   If($SecurityStyle){
-      [String]$uri += "&style=$SecurityStyle"
+   If($Style){
+      [String]$uri += "&style=$Style"
       [Bool]$query = $True
    }
    If($VolumeUuid){
@@ -3145,5 +3546,1051 @@ Function Get-UMVolume{
       Write-Warning -Message $("Failed enumerating Volumes on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#End Function Get-UMVolume.
+}#'End Function Get-UMVolume.
+#'------------------------------------------------------------------------------
+Function Get-UMVolumeID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Volume Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VolumeID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Volume.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/volumes/$VolumeID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Volume on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Volume on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMVolumeID.
+#'------------------------------------------------------------------------------
+Function Rename-UMVolume{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume UUID")]
+      [String]$VolumeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume Name")]
+      [String]$VolumeName,
+      [Parameter(Mandatory = $True, HelpMessage = "The New Volume Name")]
+      [String]$NewVolumeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/json"
+      "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Validate input parameters.
+   #'---------------------------------------------------------------------------
+   If((-Not($ClusterUuid)) -And (-Not($ClusterName))){
+      Write-Warning -Message "The 'ClusterUuid' or 'ClusterName' parameters must be provided"
+      Return $Null;
+   }
+   If((-Not($VolumeUuid)) -And (-Not($ClusterName)) -And (-Not($VserverName)) -And (-Not($VolumeName))){
+      Write-Warning -Message "The 'VolumeUuid' or 'VolumeName', 'VserverName' and 'ClusterName' parameters must be provided"
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the cluster UUID if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($ClusterUuid)) -And $ClusterName){
+      [String]$command = "Get-UMDatasource -Server $Server -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $dataSources = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      If($Null -ne $dataSources){
+         ForEach($dataSource In $dataSources.records){
+            If($dataSource.name -eq $ClusterName){
+               $ClusterUuid = $($dataSource.key).Split(":")[0]
+            }
+         }
+      }
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the volume UUID if not provided.
+   #'---------------------------------------------------------------------------
+   If((-Not($VolumeUuid)) -And $VolumeName -And $VserverName -And $ClusterName){
+      [String]$command = "Get-UMVolume -Server $Server -VolumeName $VolumeName -VserverName $VserverName -ClusterName $ClusterName -Credential `$Credential -ErrorAction Stop"
+      Try{
+         $volume = Invoke-Expression -Command $command -ErrorAction Stop
+         Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+      }Catch{
+         Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+         Return $Null;
+      }
+      [String]$VolumeUuid = $volume.records.uuid
+   }
+   If(([String]::IsNullOrEmpty($ClusterUuid)) -Or ([String]::IsNullOrEmpty($VolumeUuid))){
+      Write-Warning -Message "Failed enuerating volume and cluster UUID's"
+      Return $Null;
+   }
+   [HashTable]$volume = @{"name" = $NewVolumeName}
+   $body = $volume | ConvertTo-Json
+   #'---------------------------------------------------------------------------
+   #'Rename the Volume.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/gateways/$ClusterUuid/storage/volumes/$VolumeUuid"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method Patch -Body $body -Headers $headers -ErrorAction Stop
+      Write-Host "Renamed Volume on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed renaming Volume on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Rename-UMVolume.
+#'------------------------------------------------------------------------------
+Function Get-UMAggregate{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$AggregateID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate UUID")]
+      [String]$AggregateUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Name")]
+      [String]$AggregateName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate State")]
+      [ValidateSet("online","offline")]
+      [String]$State,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Efficiency Logical Used Space in GigaBytes")]
+      [Int]$LogicalUsedGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Efficiency Savings in GigaBytes")]
+      [Int]$SavingsGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Space Block Storage Size in GigaBytes")]
+      [Int]$SizeGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Space Block Storage Available Size in GigaBytes")]
+      [Int]$AvailableGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Space Block Storage Used Size in GigaBytes")]
+      [Int]$UsedGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Data Encryption Software Encryption Enabled Status")]
+      [ValidateSet("true","false")]
+      [String]$EncryptionEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Type")]
+      [String]$SnaplockType,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Type")]
+      [String]$AggregateType,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate creation Date")]
+      [DateTime]$DateCreated,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Block Storage Primary Raid Size")]
+      [Int64]$RaidSize,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Block Storage Primary Raid Type")]
+      [String]$RaidType,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Block Storage Mirror State")]
+      [String]$MirrorState,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Block Storage Mirror Enabled Status")]
+      [ValidateSet("true","false")]
+      [String]$MirrorEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Block Storage Hybrid Cache Enabled Status")]
+      [ValidateSet("true","false")]
+      [String]$HybridCacheEnabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Block Storage Hybrid Cache Size in GigaBytes")]
+      [Int]$HybridCacheSizeGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$NodeID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node name")]
+      [String]$NodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node UUID")]
+      [String]$NodeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the aggregates.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/aggregates?"
+   [Bool]$query = $False;
+   If($AggregateID){
+      [String]$uri += "&key=$AggregateID"
+      [Bool]$query = $True
+   }
+   If($AggregateUuid){
+      [String]$uri += "&uuid=$AggregateUuid"
+      [Bool]$query = $True
+   }
+   If($AggregateName){
+      [String]$uri += "&name=$AggregateName"
+      [Bool]$query = $True
+   }
+   If($State){
+      [String]$uri += "&state=$State"
+      [Bool]$query = $True
+   }
+   If($LogicalUsedGB){
+      [String]$uri += $("&space.efficiency.logical_used=" + ($LogicalUsedGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($SavingsGB){
+      [String]$uri += $("&space.efficiency.savings=" + ($SavingsGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($SizeGB){
+      [String]$uri += $("&space.block_storage.size=" + ($SizeGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($AvailableGB){
+      [String]$uri += $("&space.block_storage.available=" + ($AvailableGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($UsedGB){
+      [String]$uri += $("&space.block_storage.used=" + ($UsedGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($EncryptionEnabled){
+      [String]$uri += "&data_encryption.software_encryption_enabled=$EncryptionEnabled"
+      [Bool]$query = $True
+   }
+   If($SnaplockType){
+      [String]$uri += "&snaplock_type=$SnaplockType"
+      [Bool]$query = $True
+   }
+   If($AggregateType){
+      [String]$uri += "&type=$AggregateType"
+      [Bool]$query = $True
+   }
+   If($DateCreated){
+      $createTime = Get-Date -Date $DateCreated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
+      [String]$uri += $("&create_time=" + ($createTime.ToString()))
+      [Bool]$query = $True
+   }
+   If($RaidSize){
+      [String]$uri += "&block_storage.primary.raid_size=$RaidSize"
+      [Bool]$query = $True
+   }
+   If($RaidType){
+      [String]$uri += "&block_storage.primary.raid_type=$RaidType"
+      [Bool]$query = $True
+   }
+   If($MirrorState){
+      [String]$uri += "&block_storage.mirror.state=$MirrorState"
+      [Bool]$query = $True
+   }
+   If($MirrorEnabled){
+      [String]$uri += "&block_storage.mirror.enabled=$MirrorEnabled"
+      [Bool]$query = $True
+   }
+   If($HybridCacheEnabled){
+      [String]$uri += "&block_storage.hybrid_cache.enabled=$HybridCacheEnabled"
+      [Bool]$query = $True
+   }
+   If($HybridCacheSizeGB){
+      [String]$uri += $("&block_storage.hybrid_cache.size=" + ($HybridCacheSizeGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query = $True
+   }
+   If($NodeID){
+      [String]$uri += "&node.key=$NodeID"
+      [Bool]$query = $True
+   }
+   If($NodeName){
+      [String]$uri += "&node.name=$NodeName"
+      [Bool]$query = $True
+   }
+   If($NodeUuid){
+      [String]$uri += "&node.uuid=$NodeUuid"
+      [Bool]$query = $True
+   }
+   If($Offset){
+      [String]$uri += "&offset=$Offset"
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If($MaxRecords){
+      [String]$uri += "&max_records=$MaxRecords"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Aggregates.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Aggregates on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Aggregates on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMAggregate.
+#'------------------------------------------------------------------------------
+Function Get-UMAggregateID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Aggregate Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$AggregateID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Aggregate.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/aggregates/$AggregateID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Aggregate on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Aggregate on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMAggregateID.
+#'------------------------------------------------------------------------------
+Function Get-UMQoSPolicy{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The QoS Policy Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$QoSPolicyID,
+      [Parameter(Mandatory = $False, HelpMessage = "The QoS Policy UUID")]
+      [String]$QoSPolicyUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The QoS Policy Minimum IOPs")]
+      [Int64]$MinimumIops,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
+      [String]$VserverUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the QoS Policies.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/qos/policies?"
+   [Bool]$query = $False;
+   If($QoSPolicyID){
+      [String]$uri += "&key=$VolumeID"
+      [Bool]$query = $True
+   }
+   If($QoSPolicyUuid){
+      [String]$uri += "&uuid=$QoSPolicyUuid"
+      [Bool]$query = $True
+   }
+   If($MinimumIops){
+      [String]$uri += "&adaptive.absolute_min_iops=$MinimumIops"
+      [Bool]$query = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query = $True
+   }
+   If($VserverID){
+      [String]$uri += "&svm.key=$VserverID"
+      [Bool]$query = $True
+   }
+   If($VserverName){
+      [String]$uri += "&svm.name=$VserverName"
+      [Bool]$query = $True
+   }
+   If($VserverUuid){
+      [String]$uri += "&svm.uuid=$VserverUuid"
+      [Bool]$query = $True
+   }
+   If($Offset){
+      [String]$uri += "&offset=$Offset"
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If($MaxRecords){
+      [String]$uri += "&max_records=$MaxRecords"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the QoS Policies.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated QoS Policies on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating QoS Policies on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMQoSPolicy.
+#'------------------------------------------------------------------------------
+Function Get-UMQoSPolicyID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The QoS Policy Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$QoSPolicyID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the QoS Policy.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/qos/policies/$PolicyID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated QoS Policy on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating QoS Policy on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMQoSPolicyID.
+#'------------------------------------------------------------------------------
+Function Get-UMQtree{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Qtree Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$QtreeId,
+      [Parameter(Mandatory = $False, HelpMessage = "The Qtree Name")]
+      [String]$QtreeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Qtree UUID")]
+      [String]$QtreeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Qtree Security Style")]
+      [ValidateSet("mixed","ntfs","unix")]
+      [String]$SecurityStyle,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
+      [String]$VserverUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VolumeID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume name")]
+      [String]$VolumeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume UUID")]
+      [String]$VolumeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Qtrees
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/qtrees?"
+   [Bool]$query = $False;
+   If($QtreeID){
+      [String]$uri += "&key=$QtreeID"
+      [Bool]$query = $True
+   }
+   If($QtreeName){
+      [String]$uri += "&name=$QtreeName"
+      [Bool]$query = $True
+   }
+   If($QtreeUuid){
+      [String]$uri += "&uuid=$QtreeUuid"
+      [Bool]$query = $True
+   }
+   If($SecurityStyle){
+      [String]$uri += "&security_style=$SecurityStyle"
+      [Bool]$query = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query = $True
+   }
+   If($VserverID){
+      [String]$uri += "&svm.key=$VserverID"
+      [Bool]$query = $True
+   }
+   If($VserverName){
+      [String]$uri += "&svm.name=$VserverName"
+      [Bool]$query = $True
+   }
+   If($VserverUuid){
+      [String]$uri += "&svm.uuid=$VserverUuid"
+      [Bool]$query = $True
+   }
+   If($VolumeID){
+      [String]$uri += "&volume.key=$VserverID"
+      [Bool]$query = $True
+   }
+   If($VolumeName){
+      [String]$uri += "&volume.name=$VolumeName"
+      [Bool]$query = $True
+   }
+   If($VolumeUuid){
+      [String]$uri += "&volume.uuid=$VolumeUuid"
+      [Bool]$query = $True
+   }
+   If($Offset){
+      [String]$uri += "&offset=$Offset"
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If($MaxRecords){
+      [String]$uri += "&max_records=$MaxRecords"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Qtrees.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Qtrees on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Qtrees on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMQtree.
+#'------------------------------------------------------------------------------
+Function Get-UMQtreeID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Qtree Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$QtreeID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Qtree.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/storage/qtrees/$QtreeID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Qtree on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Qtree on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMQtreeID.
+#'------------------------------------------------------------------------------
+Function Get-UMServiceLevel{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Service Level Resource Key. The syntax is: '<uuid>'")]
+      [String]$ServiceLevelID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Service Level Name")]
+      [String]$ServiceLevelName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Service Level Description")]
+      [String]$Description,
+      [Parameter(Mandatory = $False, HelpMessage = "The absolute minimum iops")]
+      [Int64]$AbsoluteMinimumIops,
+      [Parameter(Mandatory = $False, HelpMessage = "The expected iops per TeraByte")]
+      [Int64]$ExpectedIopsTB,
+      [Parameter(Mandatory = $False, HelpMessage = "The peak iops TeraByte")]
+      [Int64]$PeakIopsTB,
+      [Parameter(Mandatory = $False, HelpMessage = "The peak iops allocation policy name")]
+      [ValidateSet("used_space","allocated_space")]
+      [String]$PeakIopsAllocationPolicy,
+      [Parameter(Mandatory = $False, HelpMessage = "The latency excepted")]
+      [Float]$LatencyExcepted,
+      [Parameter(Mandatory = $False, HelpMessage = "The System Defined configuration")]
+      [ValidateSet("true","false")]
+      [String]$SystemDefined,
+      [Parameter(Mandatory = $False, HelpMessage = "The space used in GigaBytes")]
+      [Int]$SpaceUsedGB,
+      [Parameter(Mandatory = $False, HelpMessage = "The workload count")]
+      [Int64]$WorkloadCount,
+      [Parameter(Mandatory = $False, HelpMessage = "The Date created")]
+      [DateTime]$DateCreated,
+      [Parameter(Mandatory = $False, HelpMessage = "The Date updated")]
+      [DateTime]$DateUpdated,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Service Levels.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/storage-provider/performance-service-levels?"
+   [Bool]$query = $False;
+   If($ServiceLevelID){
+      [String]$uri += "&key=$ServiceLevelID"
+      [Bool]$query = $True
+   }
+   If($ServiceLevelName){
+      [String]$uri += "&name=$ServiceLevelName"
+      [Bool]$query = $True
+   }
+   If($Description){
+      [String]$uri += "&description=$Description"
+      [Bool]$query = $True
+   }
+   If($AbsoluteMinimumIops){
+      [String]$uri += "&iops.absolute_min_iops=$AbsoluteMinimumIops"
+      [Bool]$query = $True
+   }
+   If($ExpectedIopsTB){
+      [String]$uri += "&iops.expected_iops_per_tb=$ExpectedIopsTB"
+      [Bool]$query = $True
+   }
+   If($PeakIopsTB){
+      [String]$uri += "&iops.peak_iops_per_tb=$PeakIopsTB"
+      [Bool]$query = $True
+   }
+   If($PeakIopsAllocationPolicy){
+      [String]$uri += "&iops.peak_iops_allocation_policy=$PeakIopsAllocationPolicy"
+      [Bool]$query = $True
+   }
+   If($LatencyExcepted){
+      [String]$uri += "&latency.excepted=$LatencyExcepted"
+      [Bool]$query = $True
+   }
+   If($SystemDefined){
+      [String]$uri += "&system_defined=$SystemDefined"
+      [Bool]$query = $True
+   }
+   If($SpaceUsedGB){
+      [String]$uri += $("&space.used=" + $($SpaceUsedGB * (1024 * 1024 * 1024)))
+      [Bool]$query = $True
+   }
+   If($WorkloadCount){
+      [String]$uri += "&workload_count=$WorkloadCount"
+      [Bool]$query = $True
+   }
+   If($DateCreated){
+      $createTime   = Get-Date -Date $DateCreated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
+      [String]$uri += $("&create_time=" + ($createTime.ToString()))
+      [Bool]$query  = $True
+   }
+   If($DateUpdated){
+      $updateTime   = Get-Date -Date $DateUpdated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
+      [String]$uri += $("&update_time=" + ($updateTime.ToString()))
+      [Bool]$query  = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Performance Service Levels.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Performance Service Levels on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Performance Service Levels on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMServiceLevel.
+#'------------------------------------------------------------------------------
+Function Get-UMServiceLevelID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Service Level Resource Key. The syntax is: '<uuid>'")]
+      [String]$ServiceLevelID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Performance Service Level.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/storage-provider/performance-service-levels/$ServiceLevelID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Performance Service Level on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Performance Service Level on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMServiceLevelID.
+#'------------------------------------------------------------------------------
+Function Get-UMObjectID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Object Type")]
+      [ValidateSet("cluster","efficiency-policy","igroup","lun","qtree","volume","vserver","service-level")]
+      [String]$ObjectType,
+      [Parameter(Mandatory = $True, HelpMessage = "The Object Name")]
+      [String]$ObjectName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Volume Name")]
+      [String]$VolumeName,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the command to enumerate the object Resource key based on the object type.
+   #'---------------------------------------------------------------------------
+   Switch($ObjectType){
+      "cluster"{
+         [String]$command = "Get-UMCluster -Server $Server -ClusterName $ObjectName -Credential `$Credential -ErrorAction Stop"
+      }
+      "efficiency-policy"{
+         [String]$command = "Get-UMEfficiencyPolicy -Server $Server -PolicyName $ObjectName -Credential `$Credential -ErrorAction Stop"
+      }
+      "igroup"{
+         If((-Not($VserverName)) -And (-Not($ClusterName))){
+            Write-Warning -Message "The 'ClusterName' and 'VserverName' parameters must be provided when specifying the object type '$ObjectType'"
+            Return $Null;
+         }
+         [String]$command = "Get-UMIgroup -Server $Server -IGroupName '$ObjectName' -ClusterName '$ClusterName' -VserverName '$VserverName' -Credential `$Credential -ErrorAction Stop"
+      }
+      "lun"{
+         If((-Not($VserverName)) -And (-Not($ClusterName))){
+            Write-Warning -Message "The 'ClusterName' and 'VserverName' parameters must be provided when specifying the object type '$ObjectType'"
+            Return $Null;
+         }
+         [String]$command = "Get-UMLun -Server $Server -LunName '$ObjectName' -ClusterName '$ClusterName' -VserverName '$VserverName' -Credential `$Credential -ErrorAction Stop"
+      }
+      "qtree"{
+         If((-Not($VserverName)) -And ((-Not($VolumeName))) -And (-Not($ClusterName))){
+            Write-Warning -Message "The 'ClusterName', 'VserverName' and 'VolumeName' parameters must be provided when specifying the object type '$ObjectType'"
+            Return $Null;
+         }
+         [String]$command = "Get-UMQtree -Server $Server -QtreeName '$ObjectName' -ClusterName '$ClusterName' -VserverName '$VserverName' -VolumeName '$VolumeName' -Credential `$Credential -ErrorAction Stop"
+      }
+      "volume"{
+         If((-Not($VserverName)) -And (-Not($ClusterName))){
+            Write-Warning -Message "The 'ClusterName' and 'VserverName' parameters must be provided when specifying the object type '$ObjectType'"
+            Return $Null;
+         }
+         [String]$command = "Get-UMVolume -Server $Server -VolumeName '$ObjectName' -VserverName '$VserverName' -ClusterName '$ClusterName' -Credential `$Credential -ErrorAction Stop"
+      }
+      "vserver"{
+         If(-Not($ClusterName)){
+            Write-Warning -Message "The 'ClusterName' parameter must be provided when specifying the object type '$ObjectType'"
+            Return $Null;
+         }
+         [String]$command = "Get-UMVserver -Server $Server -VserverName '$ObjectName' -ClusterName '$ClusterName' -Credential `$Credential -ErrorAction Stop"
+      }
+      "service-level"{
+         [String]$command = "Get-UMServiceLevel -Server $Server -ServiceLevelName '$ObjectName' -Credential `$Credential -ErrorAction Stop"
+      }
+      default {$command = $Null}
+   }
+   If([String]::IsNullOrEmpty($command)){
+      Write-Warning -Message "Invalid command attempting ot enumerate object type ""$ObjectType"""
+      Return $Null;
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the object Resource key.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-Expression -Command $command -ErrorAction Stop
+      Write-Host "Executed Command`: $command" -ForegroundColor Cyan
+   }Catch{
+      Write-Warning -Message $("Failed Executing Command`: $command. Error " + $_.Exception.Message)
+      Return $Null;
+   }
+   If($Null -ne $response){
+      [String]$id = $response.records.key
+   }
+   If([String]::IsNullOrEmpty($id)){
+      Write-Warning -Message "Failed enumerating $ObjectType ""$ObjectName"" on cluster ""$ClusterName"""
+      Return $Null;
+   }Else{
+      Return $id;
+   }
+}#'End Function Get-UMObjectID.
+#'------------------------------------------------------------------------------
+Function Get-UMEfficiencyPolicy{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy Resource Key. The syntax is: '<uuid>'")]
+      [String]$PolicyID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy name")]
+      [String]$PolicyName,
+      [Parameter(Mandatory = $False, HelpMessage = "The System Defined configuration")]
+      [ValidateSet("true","false")]
+      [String]$SystemDefined,
+      [Parameter(Mandatory = $False, HelpMessage = "The Thin Provisioned configuration")]
+      [ValidateSet("true","false")]
+      [String]$ThinProvisioned,
+      [Parameter(Mandatory = $False, HelpMessage = "The Workload Count")]
+      [Int64]$WorkloadCount,
+      [Parameter(Mandatory = $False, HelpMessage = "The Compression configuration")]
+      [ValidateSet("inline","background","none")]
+      [String]$Compression,
+      [Parameter(Mandatory = $False, HelpMessage = "The Deduplication configuration")]
+      [ValidateSet("inline","background","none")]
+      [String]$Deduplication,
+      [Parameter(Mandatory = $False, HelpMessage = "The Date Created")]
+      [DateTime]$DateCreated,
+      [Parameter(Mandatory = $False, HelpMessage = "The Date Updated")]
+      [DateTime]$DateUpdated,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Storage Efficiency Policies.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/storage-provider/storage-efficiency-policies?"
+   [Bool]$query = $False;
+   If($PolicyID){
+      [String]$uri += "&key=$PolicyID"
+      [Bool]$query = $True
+   }
+   If($PolicyName){
+      [String]$uri += "&name=$PolicyName"
+      [Bool]$query = $True
+   }
+   If($SystemDefined){
+      [String]$uri += "&system_defined=$SystemDefined"
+      [Bool]$query = $True
+   }
+   If($ThinProvisioned){
+      [String]$uri += "&space_thin_provisioned=$ThinProvisioned"
+      [Bool]$query = $True
+   }
+   If($WorkloadCount){
+      [String]$uri += "&workload_count=$WorkloadCount"
+      [Bool]$query = $True
+   }
+   If($Compression){
+      [String]$uri += "&compression=$Compression"
+      [Bool]$query = $True
+   }
+   If($Deduplication){
+      [String]$uri += "&deduplication=$Deduplication"
+      [Bool]$query = $True
+   }
+   If($DateCreated){
+      $createTime   = Get-Date -Date $DateCreated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
+      [String]$uri += $("&create_time=" + ($createTime.ToString()))
+      [Bool]$query  = $True
+   }
+   If($DateUpdated){
+      $updateTime   = Get-Date -Date $DateUpdated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
+      [String]$uri += $("&update_time=" + ($updateTime.ToString()))
+      [Bool]$query  = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Storage Efficency Policies.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Storage Efficiency Policies on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Storage Efficiency Policies on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMEfficiencyPolicy.
+#'------------------------------------------------------------------------------
+Function Get-UMEfficiencyPolicyID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Storage Efficiency Policy Resource Key. The syntax is: '<uuid>'")]
+      [String]$PolicyID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Storage Efficency Policy.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/storage-provider/storage-efficiency-policies/$PolicyID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Storage Efficiency Policy on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Storage Efficiency Policy on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMEfficiencyPolicyID.
 #'------------------------------------------------------------------------------
