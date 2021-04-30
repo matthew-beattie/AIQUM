@@ -1383,12 +1383,15 @@ Function Get-UMVserver{
    }
    If($Offset){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query = $True
    }
    If($MaxRecords){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -1436,6 +1439,84 @@ Function Get-UMVserverID{
    }
    Return $response;
 }#'End Function Get-UMVserverID.
+#'------------------------------------------------------------------------------
+Function Remove-UMVserver{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "If Set to true, SVM objects will be deleted and data volumes will be offline and deleted")]
+      [Bool]$Force,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Validate the input paramaters.
+   #'---------------------------------------------------------------------------
+   [Bool]$id = $False
+   If(-Not($VserverID)){
+      If((-Not($VserverName)) -And (-Not($ClusterName))){
+         Write-Warning -Message "The 'VserverName' and 'ClusterName' must be provided if the 'VserverID' is not specified"
+         Return $Null;
+      }
+   }Else{
+      [Bool]$id = $True
+   }
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/json"
+      "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Vserver by Name if the UUID is not provided.
+   #'---------------------------------------------------------------------------
+   If(-Not($id)){
+      Try{
+         $i = Get-UMVserver -Server $Server -ClusterName $ClusterName -VserverName $VserverName -Credential $Credential -ErrorAction Stop
+      }Catch{
+         Write-Warning "Failed enumerating Vserver ""$VserverName"" on cluster ""$ClusterName"""
+      }
+      If($Null -eq $i){
+         Write-Warning -Message "The Vserver ""$VserverName"" was not found on cluster ""$ClusterName"""
+         Return $Null;
+      }
+      [String]$VserverID = $i.records.key
+   }
+   #'---------------------------------------------------------------------------
+   #'Remove the Vserver.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/svm/svms/$VserverID"
+   If($Force){
+      [String]$uri += $("`?force=" + $Force.ToString().ToLower())
+   }
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method DELETE -Headers $headers -ErrorAction Stop
+      If($id){
+         Write-Host "Removed Vserver ID ""$VserverID"" from Server ""$Server"" using URI ""$uri"""
+      }Else{
+         Write-Host "Removed Vserver ""$VserverName"" ID ""$VserverID"" from Cluster ""$ClusterName"" on server ""$Server"" using URI ""$uri"""
+      }
+   }Catch{
+      If($id){
+         Write-Warning -Message $("Failed removing VserverID ""$VserverID"" from Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }Else{
+         Write-Warning -Message $("Failed removing Vserver ""$VserverName"" ID ""$VserverID"" from Cluster ""$ClusterName"" on server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      }
+   }
+   Return $response;
+}#'End Function Remove-UMVserver.
 #'------------------------------------------------------------------------------
 Function Invoke-UMRediscover{
    [CmdletBinding()]
