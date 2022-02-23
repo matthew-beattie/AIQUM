@@ -4445,6 +4445,76 @@ Function Get-UMServiceLevelID{
    }
    Return $response;
 }#'End Function Get-UMServiceLevelID.
+#'------------------------------------------------------------------------------Function Get-UMObjectMetrics{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Object Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ObjectID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Object Type to enumerate metrics for")]
+      [ValidateSet("aggregate", "cluster", "ethernet_port", "fc_interface", "fc_port", "ip_interface", "lun", "node", "volume", "svm")]
+      [String]$ObjectType,
+      [Parameter(Mandatory = $True, HelpMessage = "The time range for the data")]
+      [ValidateSet("1h", "12h", "1d", "2d", "3d", "15d", "1w", "1m", "2m", "3m", "6m")]
+      [String]$Interval,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the command to enumerate the object Resource key based on the object type.
+   #'---------------------------------------------------------------------------
+   Switch($ObjectType){
+      "cluster"{
+         [String]$endPoint = "/datacenter/cluster/clusters/$ObjectID/metrics"
+      }
+      "node"{
+         [String]$endPoint = "/datacenter/cluster/nodes/$ObjectID/metrics"
+      }
+      "ethernet_port"{
+         [String]$endPoint = "/datacenter/network/ethernet/ports/$ObjectID/metrics"
+      }
+      "fc_interface"{
+         [String]$endPoint = "/datacenter/network/fc/interfaces/$ObjectID/metrics"
+      }
+      "fc_port"{
+         [String]$endPoint = "/datacenter/network/fc/ports/$ObjectID/metrics"
+      }
+      "ip_interface"{
+         [String]$endPoint = "/datacenter/network/ip/interfaces/$ObjectID/metrics"
+      }
+      "aggregate"{
+         [String]$endPoint = "/datacenter/storage/aggregates/$ObjectID/metrics"
+      }
+      "lun"{
+         [String]$endPoint = "/datacenter/storage/luns/$ObjectID/metrics"
+      }
+      "volume"{
+         [String]$endPoint = "/datacenter/storage/volumes/$ObjectID/metrics"
+      }
+      "svm"{
+         [String]$endPoint = "/datacenter/svm/svms/$ObjectID/metrics"
+      }
+      default {$endPoint = $Null}
+   }
+   [String]$uri = "https://$Server/api$endPoint"
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{"Authorization" = "Basic $auth"}
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Object metrics.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Object metrics on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Object metrics on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMObjectMetrics.
 #'------------------------------------------------------------------------------
 Function Get-UMObjectID{
    [CmdletBinding()]
