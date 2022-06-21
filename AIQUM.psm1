@@ -19,6 +19,72 @@
 '-----------------------------------------------------------------------------#>
 #'Active IQ Unified Manager REST API Functions.
 #'------------------------------------------------------------------------------
+Function Get-UMAuthorization{
+   [Alias("Get-UMAuth")]
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/json"
+      "Content-Type"  = "application/json"
+   }
+   Return $headers;
+}#'End Function Get-UMAuthorization
+#'------------------------------------------------------------------------------
+Function Add-UMDatasource{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Protocol name")]
+      [String]$Protocol="https",
+      [Parameter(Mandatory = $False, HelpMessage = "The Port Number")]
+      [Int]$Port=443,
+      [Parameter(Mandatory = $True, HelpMessage = "The Datasource Address FQDN or IP Address")]
+      [String]$Address,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to the Datasource")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$DatasourceCredential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the datasource to add.
+   #'---------------------------------------------------------------------------
+   [HashTable]$datasource = @{}
+   [HashTable]$datasource.Add("address", $Address)
+   [HashTable]$datasource.Add("password", $DatasourceCredential.GetNetworkCredential().Password),
+   [HashTable]$datasource.Add("port", $Port),
+   [HashTable]$datasource.Add("protocol", $Protocol)
+   [HashTable]$datasource.Add("username", $DatasourceCredential.UserName)
+   $body = $datasource | ConvertTo-Json
+   #'---------------------------------------------------------------------------
+   #'Add the datasource.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/admin/datasources/clusters"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method POST -Body $body -Headers $headers -ErrorAction Stop
+      Write-Host "Added datasource ""$Address"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed adding datasource ""$Address"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Add-UMDatasource.
+#'------------------------------------------------------------------------------
 Function Get-UMCluster{
    [CmdletBinding()]
    Param(
