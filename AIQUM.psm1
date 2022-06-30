@@ -39,6 +39,190 @@ Function Get-UMAuthorization{
    Return $headers;
 }#'End Function Get-UMAuthorization
 #'------------------------------------------------------------------------------
+Function Get-UMBackupConfig{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Enumerate the backup configuration.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/admin/backup-settings"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated backup configuration on server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating backup configuration on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMBackupConfig.
+#'------------------------------------------------------------------------------
+Function Set-UMBackupConfig{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "Day of the week when backup is scheduled")]
+      [ValidateSet("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday")]
+      [String]$Weekday,
+      [Parameter(Mandatory = $False, HelpMessage = "Frequency at which a database backup is scheduled. Among possible values, none implies that backup is not scheduled")]
+      [ValidateSet("daily", "weekly", "none")]
+      [String]$Frequency,
+      [Parameter(Mandatory = $False, HelpMessage = "Hour of the day when backup is scheduled. The value is specified in 24-hour format")]
+      [ValidateRange(0, 23)]
+      [Int]$Hour,
+      [Parameter(Mandatory = $False, HelpMessage = "Minute of the hour when backup is scheduled")]
+      [ValidateRange(0, 59)]
+      [Int]$Minute,
+      [Parameter(Mandatory = $False, HelpMessage = "Path to the location where backup files are stored")]
+      [String]$BackupPath,
+      [Parameter(Mandatory = $False, HelpMessage = "Maximum number of backup files to be retained")]
+      [Int]$RetentionCount,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Create the backup configuration.
+   #'---------------------------------------------------------------------------
+   $config = @{};
+   If($Weekday){
+      $config.Add("day_of_week", $Weekday)
+   }
+   If($Frequency){
+      $config.Add("frequency", $Frequency)
+   }
+   If($Hour -ge 0 -and $Hour -le 23){
+      $config.Add("hour", $Hour)
+   }
+   If($Minute -ge 0 -and $Minute -le 59){
+      $config.Add("minute", $Minute)
+   }
+   If($BackupPath){
+      $config.Add("path", $BackupPath)
+   }
+   If($RetentionCount -ge 1){
+      $config.Add("retention_count", $RetentionCount)
+   }
+   $body = $config | ConvertTo-Json
+   #'---------------------------------------------------------------------------
+   #'Set the backup configuration.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/admin/backup-settings"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method PATCH -Body $body -Headers $headers -ErrorAction Stop
+      Write-Host "Set backup configuration on server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed setting backup configuration on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Set-UMBackupConfig.
+#'------------------------------------------------------------------------------
+Function Get-UMBackupFileInfo{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset=0,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Backup File Name")]
+      [String]$FileName,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Backup File Information.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/admin/backup-file-info?"
+   [Bool]$query = $False;
+   If($Offset -ne 0){
+      [String]$uri += "&offset=$Offset"
+      [Bool]$query = $True
+   }Else{
+      [String]$uri += "&offset=$Offset"
+      [Bool]$query = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query = $True
+   }
+   If($MaxRecords -ge 1){
+      [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query = $True
+   }
+   If($BackupName){
+      [String]$uri += "&name=$BackupName"
+      [Bool]$query = $True
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Get the backup file information.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated backup files on server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating backup files on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMBackupFileInfo.
+#'------------------------------------------------------------------------------
+Function Invoke-UMBackup{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Invoke a backup.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/admin/backup"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method POST -Headers $headers -ErrorAction Stop
+      Write-Host "Invoked backup on server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed invoking backup on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Invoke-UMBackup.
+#'------------------------------------------------------------------------------
 Function Get-UMCluster{
    [CmdletBinding()]
    Param(
