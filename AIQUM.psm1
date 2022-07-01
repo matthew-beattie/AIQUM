@@ -294,8 +294,7 @@ Function Get-UMCluster{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the clusters.
    #'---------------------------------------------------------------------------
@@ -382,8 +381,7 @@ Function Get-UMClusterID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the cluster.
    #'---------------------------------------------------------------------------
@@ -445,8 +443,7 @@ Function Get-UMNode{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the nodes.
    #'---------------------------------------------------------------------------
@@ -549,8 +546,7 @@ Function Get-UMNodeID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Node.
    #'---------------------------------------------------------------------------
@@ -610,8 +606,7 @@ Function Get-UMCifsShare{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the CIFS Share.
    #'---------------------------------------------------------------------------
@@ -710,8 +705,7 @@ Function Get-UMCifsShareID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the CIFS Share.
    #'---------------------------------------------------------------------------
@@ -763,8 +757,7 @@ Function Get-UMExportPolicy{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the Export Policy.
    #'---------------------------------------------------------------------------
@@ -847,8 +840,7 @@ Function Get-UMExportPolicyID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Export Policy.
    #'---------------------------------------------------------------------------
@@ -906,8 +898,7 @@ Function Get-UMIgroup{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the Igroups.
    #'---------------------------------------------------------------------------
@@ -998,8 +989,7 @@ Function Get-UMIgroupID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Igroup.
    #'---------------------------------------------------------------------------
@@ -1068,12 +1058,7 @@ Function New-UMIgroup{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the igroup body and convert it to JSON.
    #'---------------------------------------------------------------------------
@@ -1165,12 +1150,7 @@ Function Set-UMIgroup{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the igroup URI. Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -1240,12 +1220,7 @@ Function Remove-UMIgroup{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the IGroup by Name if the resource key is not provided.
    #'---------------------------------------------------------------------------
@@ -1545,8 +1520,7 @@ Function Get-UMVserver{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the vservers.
    #'---------------------------------------------------------------------------
@@ -1660,8 +1634,7 @@ Function Get-UMVserverID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the vserver.
    #'---------------------------------------------------------------------------
@@ -1708,12 +1681,7 @@ Function Remove-UMVserver{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Vserver by Name if the UUID is not provided.
    #'---------------------------------------------------------------------------
@@ -1794,12 +1762,7 @@ Function Invoke-UMRediscover{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -1989,8 +1952,10 @@ Function Get-UMJob{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth        = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers     = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the jobs.
+   #'---------------------------------------------------------------------------
    [String]$uri = "https://$Server/api/management-server/jobs?"
    [Bool]$query = $False;
    If($JobID){
@@ -2063,12 +2028,11 @@ Function Get-UMJobID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth        = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers     = @{"Authorization" = "Basic $auth"}
-   [String]$uri = "https://$Server/api/management-server/jobs/$JobID"
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the job.
    #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/jobs/$JobID"
    Try{
       $job = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
       Write-Host "Enumerated job ""$JobID"" on Server ""$Server"" using URI ""$uri"""
@@ -2122,12 +2086,7 @@ Function Set-UMDatasourcePassword{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -2171,10 +2130,7 @@ Function Get-UMDatasource{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Datasources.
    #'---------------------------------------------------------------------------
@@ -2203,10 +2159,7 @@ Function Get-UMDatasourceID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Datasources.
    #'---------------------------------------------------------------------------
@@ -2243,12 +2196,7 @@ Function Add-UMDatasource{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -2302,12 +2250,7 @@ Function Remove-UMDatasource{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Datasource by Name if the resource key is not provided.
    #'---------------------------------------------------------------------------
@@ -2369,10 +2312,7 @@ Function Get-UMDataRetention{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Datasources.
    #'---------------------------------------------------------------------------
@@ -2405,12 +2345,7 @@ Function Set-UMDataRetention{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -2469,8 +2404,7 @@ Function Get-UMUser{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the users.
    #'---------------------------------------------------------------------------
@@ -2529,8 +2463,7 @@ Function Get-UMUsername{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the user.
    #'---------------------------------------------------------------------------
@@ -2583,12 +2516,7 @@ Function New-UMUser{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -2647,12 +2575,7 @@ Function Set-UMUser{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Create a hashtable for the body and covert to JSON.
    #'---------------------------------------------------------------------------
@@ -2696,12 +2619,7 @@ Function Remove-UMUser{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Remove the user.
    #'---------------------------------------------------------------------------
@@ -2744,12 +2662,7 @@ Function New-UMLunMap{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the LUN Resource key if not provided.
    #'---------------------------------------------------------------------------
@@ -2819,7 +2732,7 @@ Function New-UMLunMap{
       Write-Warning -Message $("Failed mapping " + $message + ". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
-}#'End Function Add-UMLunMap.
+}#'End Function New-UMLunMap.
 #'------------------------------------------------------------------------------
 Function Set-UMLun{
    [CmdletBinding()]
@@ -2855,12 +2768,7 @@ Function Set-UMLun{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the LUN Resource key if not provided.
    #'---------------------------------------------------------------------------
@@ -3072,8 +2980,7 @@ Function Get-UMLun{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the vservers.
    #'---------------------------------------------------------------------------
@@ -3220,8 +3127,7 @@ Function Get-UMLunID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the LUN
    #'---------------------------------------------------------------------------
@@ -3256,12 +3162,7 @@ Function Remove-UMLun{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the LUN Resource key if not provided.
    #'---------------------------------------------------------------------------
@@ -3340,12 +3241,7 @@ Function New-UMLun{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Validate the input parameters.
    #'---------------------------------------------------------------------------
@@ -3562,8 +3458,7 @@ Function Get-UMEventID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Event ID.
    #'---------------------------------------------------------------------------
@@ -3619,8 +3514,7 @@ Function Set-UMEventID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Ensure the Event ID exists.
    #'---------------------------------------------------------------------------
@@ -3750,8 +3644,7 @@ Function Get-UMVolume{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the clusters.
    #'---------------------------------------------------------------------------
@@ -3879,8 +3772,7 @@ Function Get-UMVolumeID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Volume.
    #'---------------------------------------------------------------------------
@@ -3919,12 +3811,7 @@ Function Rename-UMVolume{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{
-      "Authorization" = "Basic $auth"
-      "Accept"        = "application/json"
-      "Content-Type"  = "application/json"
-   }
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Validate input parameters.
    #'---------------------------------------------------------------------------
@@ -4063,8 +3950,7 @@ Function Get-UMAggregate{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the aggregates.
    #'---------------------------------------------------------------------------
@@ -4212,8 +4098,7 @@ Function Get-UMAggregateID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Aggregate.
    #'---------------------------------------------------------------------------
@@ -4265,8 +4150,7 @@ Function Get-UMQoSPolicy{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the QoS Policies.
    #'---------------------------------------------------------------------------
@@ -4349,8 +4233,7 @@ Function Get-UMQoSPolicyID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the QoS Policy.
    #'---------------------------------------------------------------------------
@@ -4411,8 +4294,7 @@ Function Get-UMQtree{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the Qtrees
    #'---------------------------------------------------------------------------
@@ -4511,8 +4393,7 @@ Function Get-UMQtreeID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Qtree.
    #'---------------------------------------------------------------------------
@@ -4570,8 +4451,7 @@ Function Get-UMServiceLevel{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the Service Levels.
    #'---------------------------------------------------------------------------
@@ -4666,8 +4546,7 @@ Function Get-UMServiceLevelID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Performance Service Level.
    #'---------------------------------------------------------------------------
@@ -4738,8 +4617,7 @@ Function Get-UMObjectMetrics{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Object metrics.
    #'---------------------------------------------------------------------------
@@ -4886,8 +4764,7 @@ Function Get-UMEfficiencyPolicy{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the Storage Efficiency Policies.
    #'---------------------------------------------------------------------------
@@ -4966,8 +4843,7 @@ Function Get-UMEfficiencyPolicyID{
    #'---------------------------------------------------------------------------
    #'Set the authentication header to connect to AIQUM.
    #'---------------------------------------------------------------------------
-   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
-   $headers = @{"Authorization" = "Basic $auth"}
+   $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
    #'Enumerate the Storage Efficency Policy.
    #'---------------------------------------------------------------------------
