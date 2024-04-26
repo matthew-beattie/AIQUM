@@ -4637,7 +4637,7 @@ Function Get-UMObjectID{
       [ValidateNotNullOrEmpty()]
       [String]$Server,
       [Parameter(Mandatory = $True, HelpMessage = "The Object Type")]
-      [ValidateSet("cluster","efficiency-policy","igroup","lun","qtree","volume","vserver","service-level")]
+      [ValidateSet("cluster","efficiency-policy","igroup","lun","qtree","volume","vserver","service-level","script")]
       [String]$ObjectType,
       [Parameter(Mandatory = $True, HelpMessage = "The Object Name")]
       [String]$ObjectName,
@@ -4698,6 +4698,9 @@ Function Get-UMObjectID{
       }
       "service-level"{
          [String]$command = "Get-UMServiceLevel -Server $Server -ServiceLevelName '$ObjectName' -Credential `$Credential -ErrorAction Stop"
+      }
+      "script"{
+         [String]$command = "Get-UMScript -Server $Server -ScriptName '$ObjectName' -Credential `$Credential -ErrorAction Stop"
       }
       default {$command = $Null}
    }
@@ -4856,4 +4859,387 @@ Function Get-UMEfficiencyPolicyID{
    }
    Return $response;
 }#'End Function Get-UMEfficiencyPolicyID.
+#'------------------------------------------------------------------------------
+Function Get-UMAlert{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Alert UUID")]
+      [String]$AlertID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Alert Name")]
+      [String]$AlertName,
+      [Parameter(Mandatory = $False, HelpMessage = "Specifies whether the alert is enabled")]
+      [Bool]$Enabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The Alert notification start time")]
+      [String]$StartTime,
+      [Parameter(Mandatory = $False, HelpMessage = "The Alert notification end time")]
+      [String]$EndTime,
+      [Parameter(Mandatory = $False, HelpMessage = "The Alert notification duration")]
+      [String]$Duration,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script ID attached to the Alert")]
+      [String]$ScriptID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script Name attached to the Alert")]
+      [String]$ScriptName,
+      [Parameter(Mandatory = $False, HelpMessage = "Specifies whether the alert sends an SNMP trap")]
+      [Bool]$SnmpTrap,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset=0,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Alert.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/alerts?"
+   [Bool]$query = $False;
+   If($AlertID){
+      [String]$uri += "&key=$AlertID"
+      [Bool]$query  = $True
+   }
+   If($AlertName){
+      [String]$uri += "&name=$AlertName"
+      [Bool]$query  = $True
+   }
+   If($Enabled){
+      [String]$uri += "&enable=$Enabled"
+      [Bool]$query  = $True
+   }
+   If($StartTime){
+      [String]$uri += "&action.notification.from=$StartTime"
+      [Bool]$query  = $True
+   }
+   If($EndTime){
+      [String]$uri += "&action.notification.to=$EndTime"
+      [Bool]$query  = $True
+   }
+   If($Duration){
+      [String]$uri += "&action.notification.duration=$Duration"
+      [Bool]$query  = $True
+   }
+   If($ScriptID){
+      [String]$uri += "&action.script.key=$ScriptID"
+      [Bool]$query  = $True
+   }
+   If($ScriptName){
+      [String]$uri += "&action.script.name=$ScriptName"
+      [Bool]$query  = $True
+   }
+   If($SnmpTrap){
+      [String]$uri += "&action.notification.send_snmp_trap=$SnmpTrap"
+      [Bool]$query  = $True
+   }
+   If($Offset -ne 0){
+      [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
+   }
+   If($MaxRecords -ge 1){
+      [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Alert.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Alert on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Alert on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'Get-UMAlert.
+#'------------------------------------------------------------------------------
+Function Get-UMAlertID{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Alert UUID")]
+      [String]$AlertID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Alert.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/alerts/$AlertID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Alert ""$AlertID"" on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Alert ""$AlertID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'Get-UMAlertID.
+#'------------------------------------------------------------------------------
+Function New-UMAlert{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Alert name")]
+      [String]$AlertName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Alert description")]
+      [String]$Description,
+      [Parameter(Mandatory = $False, HelpMessage = "Indicates if the alert is enabled")]
+      [Bool]$Enabled = $False,
+      [Parameter(Mandatory = $False, HelpMessage = "The event severtities. Valid values are 'warning, error or critical'")]
+      [Array]$EventSeverities,
+      [Parameter(Mandatory = $False, HelpMessage = "The Type of event to be observered. EG 'Login Banner Disabled'. Valid values are 'warning', 'error' and 'critical'")]
+      [Array]$EventTypes,
+      [Parameter(Mandatory = $False, HelpMessage = "The Resource Type")]
+      [ValidateSet("cluster", "cluster_node", "vserver", "aggregate", "volume", "network_lif", "qtree", "lun", "namespace", "bridge", "bridge_stack_connection", "fcp_lif", "inter_node_connection", "inter_switch_connection", "network_port", "metro_cluster_relationship", "nvmf_fc_lif", "node_bridge_connection", "node_stack_connection", "node_switch_connection", "storage_shelf", "switch", "switch_bridge_connection", "snap_mirror", "fcp_port", "objectstore_config", "disk", "infinitevol_storage_service", "user_quota", "management_station", "storage_service")]
+      [String]$ResourceType,
+      [Parameter(Mandatory = $False, HelpMessage = "The Resource UUID's")]
+      [Array]$ResourceKeys,
+      [Parameter(Mandatory = $False, HelpMessage = "The Resource names to include")]
+      [Array]$Include,
+      [Parameter(Mandatory = $False, HelpMessage = "The Resource names to exclude")]
+      [Array]$Exclude,
+      [Parameter(Mandatory = $False, HelpMessage = "Indicates if all resources are included")]
+      [Bool]$IncludeAll = $False,
+      [Parameter(Mandatory = $False, HelpMessage = "The duration between alert notifications. EG 'PT1000S'")]
+      [String]$Duration,
+      [Parameter(Mandatory = $False, HelpMessage = "The Email Addresses to send the alert notifications to")]
+      [Array]$EmailAddresses,
+      [Parameter(Mandatory = $False, HelpMessage = "The start time of recurring notifications. EG 'PT9000S'")]
+      [String]$StartTime,
+      [Parameter(Mandatory = $False, HelpMessage = "The end time of recurring notifications. EG 'PT18000S'")]
+      [String]$EndTime,
+      [Parameter(Mandatory = $False, HelpMessage = "Indicates if an SNMP trap should be issued")]
+      [Bool]$SnmpTrap = $False,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script UUID. EG '02c9e252-41be-11e9-81d5-00a0986138f7'")]
+      [String]$ScriptID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script name to attach to the alert")]
+      [String]$ScriptName,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Create a hashtable for the body and covert to JSON.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/alerts"
+   $alert        = @{};
+   $action       = @{};
+   $event        = @{};
+   $notification = @{};
+   $resource     = @{};
+   $script       = @{};
+   $resources    = @();
+   $notification.Add("duration", $Duration)
+   $notification.Add("emails", [Array]$EmailAddresses)
+   $notification.Add("from", $StartTime)
+   $notification.Add("send_snmp_trap", $SnmpTrap)
+   $notification.Add("to", $EndTime)
+   $script.Add("key", $ScriptID)
+   $script.Add("name", $ScriptName)
+   $action.Add("notification", $notification)
+   $action.Add("script", $script)
+   $alert.Add("action", $action)
+   $alert.Add("description", $Description)
+   $alert.Add("enabled", $Enabled)
+   $event.Add("severities", [Array]$EventSeverities)
+   $event.Add("types", [Array]$EventTypes)
+   $alert.Add("event", $event)
+   $alert.Add("name", $AlertName)
+   $resource.Add("exclude", [Array]$Exclude)
+   $resource.Add("include", [Array]$Include)
+   $resource.Add("include_all", $IncludeAll)
+   $resource.Add("keys", [Array]$ResourceKeys)
+   $resource.Add("type", $ResourceType)
+   $resources += $resource
+   $alert.add("resource", $resources)
+   $body = $alert | ConvertTo-Json -Depth 3 
+   #'---------------------------------------------------------------------------
+   #'Create the Alert.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method POST -Body $body -Headers $headers -ErrorAction Stop
+      Write-Host "Created Alert ""$AlertName"" on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed creating Alert ""$AlertName"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function New-UMAlert.
+#'------------------------------------------------------------------------------
+Function Remove-UMAlert{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Alert UUID")]
+      [String]$AlertID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Delete the Alert.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/alerts/$AlertID"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method DELETE -Headers $headers -ErrorAction Stop
+      Write-Host "Deleted Alert ""$AlertID"" on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed deleting Alert ""$AlertID"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'Remove-UMAlert.
+#'------------------------------------------------------------------------------
+Function Get-UMScript{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script UUID")]
+      [String]$ScriptID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script Name")]
+      [String]$ScriptName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Script.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/scripts?"
+   [Bool]$query = $False;
+   If($ScriptID){
+      [String]$uri += "&key=$ScriptID"
+      [Bool]$query = $True
+   }
+   If($ScriptName){
+      [String]$uri += "&name=$ScriptName"
+      [Bool]$query = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Script.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Script on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Script on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'Get-UMScript.
+#'------------------------------------------------------------------------------
+Function New-UMScript{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The UNC Path of the Script to upload")]
+      [String]$ScriptPath,
+      [Parameter(Mandatory = $False, HelpMessage = "The Script description")]
+      [String]$Description,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Content-Type"  = "application/octet-stream"
+   }
+   #'---------------------------------------------------------------------------
+   #'Ensure the script exists. Read the content and enumerate the file name.
+   #'---------------------------------------------------------------------------
+   If(Test-Path -Path $ScriptPath){
+      Try{
+         $fileName = $([System.IO.Path]::GetFileNameWithoutExtension($ScriptPath) + [System.IO.Path]::GetExtension($ScriptPath))
+         $content  = [System.IO.File]::ReadAllBytes($ScriptPath)
+         $fileEnc  = [System.Text.Encoding]::GetEncoding('ISO-8859-1').GetString($content);
+      }Catch{
+         Write-Warning -Message $("Failed reading file ""$ScriptPath"". Error " + $_.Exception.Message)
+         Return $False;
+      }
+   }Else{
+      Return $False;
+   }
+   #'---------------------------------------------------------------------------
+   #'Set the body to upload the script.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/scripts"
+   If(-Not($Description)){
+      $Description = $Null;
+   }
+   $boundary = [System.Guid]::NewGuid().ToString();
+   $lf       = "`r`n";
+   $body = (
+      "--$boundary",
+      "Content-Disposition: form-data; name=`"name`"; filename=`"$fileName`"",
+      "Content-Type: application/octet-stream",
+      '',
+      $fileEnc,
+      "--$boundary",
+      "Content-Disposition: form-data; name=`"description`"",
+      '',
+      $Description,
+      "--$boundary--"
+   ) -join $lf
+   #'---------------------------------------------------------------------------
+   #'Upload the Script.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method POST -ContentType "multipart/form-data; boundary=`"$boundary`"" -Body $body -ErrorAction Stop
+      Write-Host "Uploaded Script ""$fileName"" on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed uploading Script ""$fileName"" on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      Return $False;
+   }
+   Return $True;
+}#'New-UMScript.
 #'------------------------------------------------------------------------------
