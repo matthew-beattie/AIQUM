@@ -254,6 +254,263 @@ Function Get-UMDatasourceCertificate{
    Return $response;
 }#'End Function Get-UMDatasourceCertificate.
 #'------------------------------------------------------------------------------
+Function Get-UMIPInterface{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$InterfaceID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface Name")]
+      [String]$InterfaceName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface UUID")]
+      [String]$InterfaceUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The IPSpace name")]
+      [String]$IPSpaceName,
+      [Parameter(Mandatory = $False, HelpMessage = "The IPSpace resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$IPSpaceID,
+      [Parameter(Mandatory = $False, HelpMessage = "The IPSpace UUID")]
+      [String]$IPSpaceUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The IP Address")]
+      [String]$IPAddress,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface Enabled Status")]
+      [ValidateSet("true","false")]
+      [String]$Enabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface State")]
+      [ValidateSet("up","down")]
+      [String]$State,
+      [Parameter(Mandatory = $False, HelpMessage = "The Netmask")]
+      [String]$Netmask,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
+      [String]$VserverUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Broadcast Domain name")]
+      [String]$BroadcastDomainName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Broadcast Domain resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$BroadcastDomainID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Broadcast Domain UUID")]
+      [String]$BroadcastDomainUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface Auto Revert configuration")]
+      [ValidateSet("true","false")]
+      [String]$AutoRevert,
+      [Parameter(Mandatory = $False, HelpMessage = "The Port name")]
+      [String]$PortName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Port resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$PortID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Port UUID")]
+      [String]$PortUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node name the port is currently located on")]
+      [String]$PortNodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Port Home Node name of the port")]
+      [String]$PortHomeNodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Port Home Node resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$PortHomeNodeID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Port Home Node UUID")]
+      [String]$PortHomeNodeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node name")]
+      [String]$NodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$NodeID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node UUID")]
+      [String]$NodeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "Defines if the Interface resides on its Home Node")]
+      [ValidateSet("true","false")]
+      [String]$IsHome,
+      [Parameter(Mandatory = $False, HelpMessage = "The Home Port name")]
+      [String]$HomePortName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Home Port resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$HomePortID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Home Port UUID")]
+      [String]$HomePortUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Home Port Node Name")]
+      [String]$HomePortNode,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the clusters.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/network/ip/interfaces?"
+   [Bool]$query = $False;
+   If($InterfaceID){
+      [String]$uri += "&key=$InterfaceID"
+      [Bool]$query  = $True
+   }
+   If($InterfaceName){
+      [String]$uri += "&name=$InterfaceName"
+      [Bool]$query  = $True
+   }
+   If($InterfaceUuid){
+      [String]$uri += "&uuid=$InterfaceUuid"
+      [Bool]$query  = $True
+   }
+   If($IPSpaceName){
+      [String]$uri += "&ipspace.name=$IPSpaceName"
+      [Bool]$query  = $True
+   }
+   If($IPSpaceID){
+      [String]$uri += "&ipspace.key=$IPSpaceID"
+      [Bool]$query  = $True
+   }
+   If($IPSpaceUuid){
+      [String]$uri += "&ipspace.uuid=$IPSpaceUuid"
+      [Bool]$query  = $True
+   }
+   If($IPAddress){
+      [String]$uri += "&ip.address=$IPAddress"
+      [Bool]$query  = $True
+   }
+   If($Netmask){
+      [String]$uri += "&ip.netmask=$Netmask"
+      [Bool]$query  = $True
+   }
+   If($Enabled){
+      [String]$uri += "&enabled=$Enabled"
+      [Bool]$query  = $True
+   }
+   If($State){
+      [String]$uri += "&state=$State"
+      [Bool]$query  = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query  = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query  = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query  = $True
+   }
+   If($VserverName){
+      [String]$uri += "&svm.name=$VserverName"
+      [Bool]$query  = $True
+   }
+   If($VserverID){
+      [String]$uri += "&svm.key=$VserverID"
+      [Bool]$query  = $True
+   }
+   If($VserverUuid){
+      [String]$uri += "&svm.uuid=$VserverUuid"
+      [Bool]$query  = $True
+   }
+   If($BroadcastDomainName){
+      [String]$uri += "&location.broadcast_domain.name=$BroadcastDomainName"
+      [Bool]$query  = $True
+   }
+   If($BroadcastDomainID){
+      [String]$uri += "&location.broadcast_domain.key=$BroadcastDomainID"
+      [Bool]$query  = $True
+   }
+   If($BroadcastDomainUuid){
+      [String]$uri += "&location.broadcast_domain.uuid=$BroadcastDomainUuid"
+      [Bool]$query  = $True
+   }
+   If($AutoRevert){
+      [String]$uri += "&location.broadcast_domain.auto_revert=$AutoRevert"
+      [Bool]$query  = $True
+   }
+   If($PortName){
+      [String]$uri += "&location.port.name=$PortName"
+      [Bool]$query  = $True
+   }
+   If($PortID){
+      [String]$uri += "&location.port.key=$PortID"
+      [Bool]$query  = $True
+   }
+   If($PortUuid){
+      [String]$uri += "&location.port.uuid=$PortUuid"
+      [Bool]$query  = $True
+   }
+   If($PortNodeName){
+      [String]$uri += "&location.port.node.name=$PortNodeName"
+      [Bool]$query  = $True
+   }
+   If($PortHomeNodeName){
+      [String]$uri += "&location.home_node.name=$PortHomeNodeName"
+      [Bool]$query  = $True
+   }
+   If($PortHomeNodeID){
+      [String]$uri += "&location.home_node.key=$PortHomeNodeID"
+      [Bool]$query  = $True
+   }
+   If($PortHomeNodeUuid){
+      [String]$uri += "&location.home_node.uuid=$PortHomeNodeUuid"
+      [Bool]$query  = $True
+   }
+   If($NodeName){
+      [String]$uri += "&location.node.name=$NodeName"
+      [Bool]$query  = $True
+   }
+   If($NodeID){
+      [String]$uri += "&location.node.key=$NodeID"
+      [Bool]$query  = $True
+   }
+   If($NodeUuid){
+      [String]$uri += "&location.node.uuid=$NodeUuid"
+      [Bool]$query  = $True
+   }
+   If($IsHome){
+      [String]$uri += "&location.node.is_home=$IsHome"
+      [Bool]$query  = $True
+   }
+   If($HomePortName){
+      [String]$uri += "&location.home_port.name=$HomePortName"
+      [Bool]$query  = $True
+   }
+   If($HomePortID){
+      [String]$uri += "&location.home_port.key=$HomePortID"
+      [Bool]$query  = $True
+   }
+   If($HomePortUuid){
+      [String]$uri += "&location.home_port.uuid=$HomePortUuid"
+      [Bool]$query  = $True
+   }
+   If($HomePortNode){
+      [String]$uri += "&location.home_port.node.name=$HomePortNode"
+      [Bool]$query  = $True
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the clusters.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated IP Network Interfaces on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed Enumerating IP Network Interfaces on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMIPInterface.
+#'------------------------------------------------------------------------------
 Function Get-UMCluster{
    [CmdletBinding()]
    Param(
