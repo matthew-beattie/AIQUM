@@ -162,22 +162,22 @@ Function Get-UMBackupFileInfo{
    [Bool]$query = $False;
    If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }Else{
       [String]$uri += "&offset=$Offset"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($BackupName){
       [String]$uri += "&name=$BackupName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -350,7 +350,7 @@ Function Get-UMIPInterface{
    #'---------------------------------------------------------------------------
    $headers = Get-UMAuthorization -Credential $Credential
    #'---------------------------------------------------------------------------
-   #'Set the URI to enumerate the clusters.
+   #'Set the URI to enumerate the Interfaces.
    #'---------------------------------------------------------------------------
    [String]$uri = "https://$Server/api/datacenter/network/ip/interfaces?"
    [Bool]$query = $False;
@@ -494,22 +494,496 @@ Function Get-UMIPInterface{
       [String]$uri += "&location.home_port.node.name=$HomePortNode"
       [Bool]$query  = $True
    }
+   If($Offset -ne 0){
+      [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
+   }
+   If($MaxRecords){
+      [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
+   }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
    }Else{
       [String]$uri = $uri.Replace("?&", "?")
    }
    #'---------------------------------------------------------------------------
-   #'Enumerate the clusters.
+   #'Enumerate the Interfaces.
    #'---------------------------------------------------------------------------
    Try{
       $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
       Write-Host "Enumerated IP Network Interfaces on Server ""$Server"" using URI ""$uri"""
    }Catch{
-      Write-Warning -Message $("Failed Enumerating IP Network Interfaces on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+      Write-Warning -Message $("Failed enumerating IP Network Interfaces on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
    }
    Return $response;
 }#'End Function Get-UMIPInterface.
+#'------------------------------------------------------------------------------
+Function Get-UMIPInterfaceID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$InterfaceID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Interface.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/network/ip/interfaces/$InterfaceID"
+   #'---------------------------------------------------------------------------
+   #'Enumerate the clusters.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated IP Network Interface on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating IP Network Interface on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMIPInterfaceID.
+#'------------------------------------------------------------------------------
+Function Get-UMIPInterfaceMetrics{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Interface Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$InterfaceID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Metric Interval. Valid values are '1h, 12h, 1d, 2d, 3d, 15d, 1w, 1m, 2m, 3m, 6m'")]
+      [ValidateSet("1h", "12h", "1d", "2d", "3d", "15d", "1w", "1m", "2m", "3m", "6m")]
+      [String]$Interval,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Interface.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/network/ip/interfaces/$InterfaceID/metrcis"
+   #'---------------------------------------------------------------------------
+   #'Enumerate the clusters.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated IP Network Interface on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating IP Network Interface on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMIPInterfaceMetrics.
+#'------------------------------------------------------------------------------
+Function Get-UMLicense{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The License Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$LicenseID,
+      [Parameter(Mandatory = $False, HelpMessage = "The License name")]
+      [String]$LicenseName,
+      [Parameter(Mandatory = $False, HelpMessage = "The License UUID")]
+      [String]$LicenseUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Scope of the license")]
+      [ValidateSet("not_available","site", "cluster", "node")]
+      [String]$Scope,
+      [Parameter(Mandatory = $False, HelpMessage = "The License serial number")]
+      [String]$SerialNumber,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster, node or license manager that owns the license")]
+      [String]$Owner,
+      [Parameter(Mandatory = $False, HelpMessage = "The Expiration date and time of the license")]
+      [String]$Expiry,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$NodeID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node name")]
+      [String]$NodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node UUID")]
+      [String]$NodeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Licenses.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/cluster/licensing/licenses?"
+   [Bool]$query = $False;
+   If($LicenseID){
+      [String]$uri += "&key=$ClusterID"
+      [Bool]$query  = $True
+   }
+   If($LicenseName){
+      [String]$uri += "&name=$LicenseName"
+      [Bool]$query  = $True
+   }
+   If($LicenseUuid){
+      [String]$uri += "&uuid=$LicenseUuid"
+      [Bool]$query  = $True
+   }
+   If($Scope){
+      [String]$uri += "&scope=$Scope"
+      [Bool]$query  = $True
+   }
+   If($SerialNumber){
+      [String]$uri += "&licenses.serial_number=$SerialNumber"
+      [Bool]$query  = $True
+   }
+   If($Owner){
+      [String]$uri += "&licenses.owner=$Owner"
+      [Bool]$query  = $True
+   }
+   If($Expiry){
+      [String]$uri += "&licenses.expiry_time=$Expiry"
+      [Bool]$query  = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query  = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query  = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query  = $True
+   }
+   If($NodeID){
+      [String]$uri += "&node.key=$NodeID"
+      [Bool]$query  = $True
+   }
+   If($NodeName){
+      [String]$uri += "&node.name=$NodeName"
+      [Bool]$query  = $True
+   }
+   If($NodeUuid){
+      [String]$uri += "&node.uuid=$NodeUuid"
+      [Bool]$query  = $True
+   }
+   If($Offset -ne 0){
+      [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True      
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
+   }
+   If($MaxRecords -ge 1){
+      [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query = $True
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Licenses.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Licenses on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Licenses on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'Get-UMLicense
+#'------------------------------------------------------------------------------
+Function Get-UMLicenseID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The License Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$LicenseID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Licenses.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/cluster/licensing/licenses/$LicenseID"
+   #'---------------------------------------------------------------------------
+   #'Enumerate the License.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated License on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating License on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'Get-UMLicenseID.
+#'------------------------------------------------------------------------------
+Function Get-UMEthernetPort{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$PortID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port name")]
+      [String]$PortName,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port UUID")]
+      [String]$PortUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port State")]
+      [ValidateSet("up","down")]
+      [String]$State,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port Speed")]
+      [String]$Speed,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port Enabled Status")]
+      [ValidateSet("true","false")]
+      [String]$Enabled,
+      [Parameter(Mandatory = $False, HelpMessage = "The MTU Size")]
+      [Int]$Mtu,
+      [Parameter(Mandatory = $False, HelpMessage = "The MAC Address")]
+      [String]$MacAddress,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port Type")]
+      [ValidateSet("vlan", "physical", "if_group")]
+      [String]$PortType,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$ClusterID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster UUID")]
+      [String]$ClusterUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Cluster name")]
+      [String]$ClusterName,      
+      [Parameter(Mandatory = $False, HelpMessage = "The Node Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$NodeID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node UUID")]
+      [String]$NodeUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Node name")]
+      [String]$NodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The IPSpace name")]
+      [String]$IPSpace,
+      [Parameter(Mandatory = $False, HelpMessage = "The Broadcast Domain Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$BroadcastDomainID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Broadcast Domain UUID")]
+      [String]$BroadcastDomainUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Broadcast Domain name")]
+      [String]$BroadcastDomainName,
+      [Parameter(Mandatory = $False, HelpMessage = "The VLAN Tag Number")]
+      [ValidateRange(1,4094)]
+      [Int]$VlanTag,
+      [Parameter(Mandatory = $False, HelpMessage = "The VLAN Base Port Name")]
+      [String]$VlanBasePortName,
+      [Parameter(Mandatory = $False, HelpMessage = "The VLAN Base Port Node Name")]
+      [String]$VlanBasePortNodeName,
+      [Parameter(Mandatory = $False, HelpMessage = "The VLAN Base Port UUID")]
+      [String]$VlanBasePortUuid,
+      [Parameter(Mandatory = $False, HelpMessage = "The Start index for the records to be returned")]
+      [Int]$Offset,
+      [Parameter(Mandatory = $False, HelpMessage = "The Maximum number of records to be returned")]
+      [Int]$MaxRecords,
+      [Parameter(Mandatory = $False, HelpMessage = "The Sort Order. Default is 'asc'")]
+      [ValidateSet("asc","desc")]
+      [String]$OrderBy,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Ethernet Ports.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/network/ethernet/ports?"
+   [Bool]$query = $False;
+   If($PortID){
+      [String]$uri += "&key=$PortID"
+      [Bool]$query  = $True
+   }
+   If($PortName){
+      [String]$uri += "&name=$PortName"
+      [Bool]$query  = $True
+   }
+   If($PortUuid){
+      [String]$uri += "&uuid=$PortUuid"
+      [Bool]$query  = $True
+   }
+   If($State){
+      [String]$uri += "&state=$State"
+      [Bool]$query  = $True
+   }
+   If($Speed){
+      [String]$uri += "&speed=$Speed"
+      [Bool]$query  = $True
+   }
+   If($Enabled){
+      [String]$uri += "&enabled=$Enabled"
+      [Bool]$query  = $True
+   }
+   If($Mtu){
+      [String]$uri += "&mtu=$Mtu"
+      [Bool]$query  = $True
+   }
+   If($MacAddress){
+      [String]$uri += "&mac_address=$MacAddress"
+      [Bool]$query  = $True
+   }
+   If($PortType){
+      [String]$uri += "&type=$PortType"
+      [Bool]$query  = $True
+   }
+   If($ClusterID){
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query  = $True
+   }
+   If($ClusterName){
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query  = $True
+   }
+   If($ClusterUuid){
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query  = $True
+   }
+   If($NodeID){
+      [String]$uri += "&node.key=$NodeID"
+      [Bool]$query  = $True
+   }
+   If($NodeName){
+      [String]$uri += "&node.name=$NodeName"
+      [Bool]$query  = $True
+   }
+   If($NodeUuid){
+      [String]$uri += "&node.uuid=$NodeUuid"
+      [Bool]$query  = $True
+   }
+   If($IPSpace){
+      [String]$uri += "&broadcast_domain.ipspace.name=$IPSpace"
+      [Bool]$query  = $True
+   }
+   If($BroadcastDomainID){
+      [String]$uri += "&broadcast_domain.key=$BroadcastDomain"
+      [Bool]$query  = $True
+   }
+   If($BroadcastDomainName){
+      [String]$uri += "&broadcast_domain.name=$BroadcastDomainName"
+      [Bool]$query  = $True
+   }
+   If($BroadcastDomainUuid){
+      [String]$uri += "&broadcast_domain.uuid=$BroadcastDomainUuid"
+      [Bool]$query  = $True
+   }
+   If($VlanTag){
+      [String]$uri += "&vlan.tag=$VlanTag"
+      [Bool]$query  = $True
+   }
+   If($VlanBasePortName){
+      [String]$uri += "&vlan.base_port.name=$VlanBasePortName"
+      [Bool]$query  = $True
+   }
+   If($VlanBasePortNodeName){
+      [String]$uri += "&vlan.base_port.node.name=$VlanBasePortNodeName"
+      [Bool]$query  = $True
+   }
+   If($VlanBasePortUuid){
+      [String]$uri += "&vlan.base_port.uuid=$VlanBasePortUuid"
+      [Bool]$query  = $True
+   }
+   If($Offset -ne 0){
+      [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True      
+   }
+   If($OrderBy){
+      [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
+   }
+   If($MaxRecords -ge 1){
+      [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query = $True
+   }
+   If(-Not($query)){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Ethernet Ports.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Ethernet Ports on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Ethernet Ports on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#End Function Get-UMEthernetPort.
+#'------------------------------------------------------------------------------
+Function Get-UMEthernetPortID{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Ethernet Port Resource Key. The syntax is: 'key=<uuid>:type=<object_type>,uuid=<uuid>'")]
+      [String]$PortID,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Set the URI to enumerate the Ethernet Port.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/datacenter/network/ethernet/ports/$PortID"
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Ethernet Port.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Ethernet Port on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Ethernet Port on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#End Function Get-UMEthernetPortID.
 #'------------------------------------------------------------------------------
 Function Get-UMCluster{
    [CmdletBinding()]
@@ -559,52 +1033,60 @@ Function Get-UMCluster{
    [Bool]$query = $False;
    If($ClusterID){
       [String]$uri += "&key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Location){
       [String]$uri += "&location=$Location"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Uuid){
       [String]$uri += "&uuid=$Uuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Contact){
       [String]$uri += "&contact=$Contact"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($IPAddress){
       [String]$uri += "&management_ip=$IPAddress"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Major){
       [String]$uri += "&version.minor=$Major"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Minor){
       [String]$uri += "&version.major=$Minor"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Micro){
       [String]$uri += "&version.generation=$Micro"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Version){
       [String]$uri += "&version.full=$Version"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True      
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
-      [String]$uri += "&max_records=$MaxRecords"
+   If($MaxRecords -ge 1){
+      If($MaxRecords -ge 101){
+         Write-Host "The maximum number of Clusters supported is 100. Adjusting -MaxRecords parameter from $MaxRecords to 100"
+         [String]$uri += "&max_records=100"
+      }Else{
+         [String]$uri += "&max_records=$MaxRecords"
+      }
+      [Bool]$query = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -708,68 +1190,71 @@ Function Get-UMNode{
    [Bool]$query = $False;
    If($NodeID){
       [String]$uri += "&key=$NodeID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Location){
       [String]$uri += "&location=$Location"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NodeName){
       [String]$uri += "&name=$NodeName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Major){
       [String]$uri += "&version.minor=$Major"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Minor){
       [String]$uri += "&version.major=$Minor"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Micro){
       [String]$uri += "&version.generation=$Micro"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Version){
       [String]$uri += "&version.full=$Version"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SerialNumber){
       [String]$uri += "&serial_number=$SerialNumber"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Uuid){
       [String]$uri += "&uuid=$Uuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Model){
       [String]$uri += "&model=$Model"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Uptime){
       [String]$uri += "&uptime=$Uptime"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -871,64 +1356,67 @@ Function Get-UMCifsShare{
    [Bool]$query = $False;
    If($ShareID){
       [String]$uri += "&key=$ShareID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Comment){
       [String]$uri += "&comment=$Comment"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($JunctionPath){
       [String]$uri += "&path=$JunctionPath"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ShareName){
       [String]$uri += "&name=$ShareName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverID){
       [String]$uri += "&svm.key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverName){
       [String]$uri += "&svm.name=$VserverName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverUuid){
       [String]$uri += "&svm.uuid=$VserverUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeID){
       [String]$uri += "&volume.key=$VolumeID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeName){
       [String]$uri += "&volume.name=$VolumeName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeUuid){
       [String]$uri += "&volume.uuid=$VolumeUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Offset){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
    If($MaxRecords){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -1056,14 +1544,17 @@ Function Get-UMExportPolicy{
       [String]$uri += "&svm.uuid=$VserverUuid"
       [Bool]$query = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
    If($MaxRecords){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -1163,56 +1654,59 @@ Function Get-UMIgroup{
    [Bool]$query = $False;
    If($IGroupID){
       [String]$uri += "&key=$IGroupID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($IGroupName){
       [String]$uri += "&name=$IGroupName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($OsType){
       [String]$uri += "&os_type=$OsType"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Protocol){
       [String]$uri += "&protocol=$Protocol"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Uuid){
       [String]$uri += "&uuid=$Uuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverID){
       [String]$uri += "&svm.key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverName){
       [String]$uri += "&svm.name=$VserverName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverUuid){
       [String]$uri += "&svm.uuid=$VserverUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
    If($MaxRecords){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -1785,79 +2279,79 @@ Function Get-UMVserver{
    [Bool]$query = $False;
    If($VserverID){
       [String]$uri += "&key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NisEnabled){
       [String]$uri += "&nis.enabled=$NisEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NvmeEnabled){
       [String]$uri += "&nvme.enabled=$NvmeEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Language){
       [String]$uri += $("&language=" + $Language.Replace("-", "_"))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NfsEnabled){
       [String]$uri += "&nfs.enabled=$NfsEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SubType){
       [String]$uri += $("&subtype=" + $SubType.Replace("-", "_"))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($FcpEnabled){
       [String]$uri += "&fcp.enabled=$FcpEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($IscsiEnabled){
       [String]$uri += "&iscsi.enabled=$IscsiEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverName){
       [String]$uri += "&name=$VserverName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($LdapEnabled){
       [String]$uri += "&ldap.enabled=$LdapEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Uuid){
       [String]$uri += "&uuid=$Uuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($CifsServer){
       [String]$uri += "&cifs.name=$CifsServer"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($CifsEnabled){
       [String]$uri += "&cifs.enabled=$CifsEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -2241,16 +2735,19 @@ Function Get-UMJob{
    }
    If($CompleteTime){
       [String]$uri += "&complete_time=$CompleteTime"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -2669,24 +3166,27 @@ Function Get-UMUser{
    [Bool]$query = $False;
    If($Username){
       [String]$uri += "&name=$Username"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Role){
       [String]$uri += "&role=$Role"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AuthenticationType){
       [String]$uri += "&authentication_type=$AuthenticationType"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -3241,118 +3741,121 @@ Function Get-UMLun{
    #'---------------------------------------------------------------------------
    #'Set the URI to enumerate the vservers.
    #'---------------------------------------------------------------------------
-   [String]$uri   = "https://$Server/api/storage-provider/luns?"
-   [Bool]$isQuery = $False;
+   [String]$uri = "https://$Server/api/storage-provider/luns?"
+   [Bool]$query = $False;
    If($LunID){
-      [String]$uri  += "&key=$LunID"
-      [Bool]$isQuery = $True
+      [String]$uri += "&key=$LunID"
+      [Bool]$query  = $True
    }
    If($LunName){
       If($LunName.Contains("/")){
-         [String]$uri  += "&name=$LunName"
+         [String]$uri += "&name=$LunName"
       }Else{
-         [String]$uri  += "&name=*$LunName"
+         [String]$uri += "&name=*$LunName"
       }
-      [Bool]$isQuery = $True
+      [Bool]$query = $True
    }
    If($LunUuid){
-      [String]$uri  += "&uuid=$LunUuid"
-      [Bool]$isQuery = $True
+      [String]$uri += "&uuid=$LunUuid"
+      [Bool]$query  = $True
    }
    If($ClusterID){
-      [String]$uri  += "&cluster.key=$ClusterID"
-      [Bool]$isQuery = $True
+      [String]$uri += "&cluster.key=$ClusterID"
+      [Bool]$query  = $True
    }
    If($ClusterName){
-      [String]$uri  += "&cluster.name=$ClusterName"
-      [Bool]$isQuery = $True
+      [String]$uri += "&cluster.name=$ClusterName"
+      [Bool]$query = $True
    }
    If($ClusterUuid){
-      [String]$uri  += "&cluster.uuid=$ClusterUuid"
-      [Bool]$isQuery = $True
+      [String]$uri += "&cluster.uuid=$ClusterUuid"
+      [Bool]$query  = $True
    }
    If($VserverID){
-      [String]$uri  += "&svm.key=$VserverID"
-      [Bool]$isQuery = $True
+      [String]$uri += "&svm.key=$VserverID"
+      [Bool]$query  = $True
    }
    If($VserverName){
-      [String]$uri  += "&svm.name=$VserverName"
-      [Bool]$isQuery = $True
+      [String]$uri += "&svm.name=$VserverName"
+      [Bool]$query  = $True
    }
    If($VserverUuid){
-      [String]$uri  += "&smv.uuid=$VserverUuid"
-      [Bool]$isQuery = $True
+      [String]$uri += "&smv.uuid=$VserverUuid"
+      [Bool]$query  = $True
    }
    If($VolumeID){
-      [String]$uri  += "&volume.key=$VolumeID"
-      [Bool]$isQuery = $True
+      [String]$uri += "&volume.key=$VolumeID"
+      [Bool]$query  = $True
    }
    If($VolumeName){
-      [String]$uri  += "&volume.name=$VolumeName"
-      [Bool]$isQuery = $True
+      [String]$uri += "&volume.name=$VolumeName"
+      [Bool]$query  = $True
    }
    If($VolumeUuid){
-      [String]$uri  += "&volume.uuid=$VolumeUuid"
-      [Bool]$isQuery = $True
+      [String]$uri += "&volume.uuid=$VolumeUuid"
+      [Bool]$query  = $True
    }
    If($AssignedServiceLevelName){
-      [String]$uri  += "&assigned_performance_service_level.name=$AssignedServiceLevelName"
-      [Bool]$isQuery = $True
+      [String]$uri += "&assigned_performance_service_level.name=$AssignedServiceLevelName"
+      [Bool]$query  = $True
    }
    If($AssignedServiceLevelID){
-      [String]$uri  += "&assigned_performance_service_level.key=$AssignedServiceLevelID"
-      [Bool]$isQuery = $True
+      [String]$uri += "&assigned_performance_service_level.key=$AssignedServiceLevelID"
+      [Bool]$query  = $True
    }
    If($AssignedServiceLevelExpectedIops){
-      [String]$uri  += "&assigned_performance_service_level.expected_iops=$AssignedServiceLevelExpectedIops"
-      [Bool]$isQuery = $True
+      [String]$uri += "&assigned_performance_service_level.expected_iops=$AssignedServiceLevelExpectedIops"
+      [Bool]$query  = $True
    }
    If($AssignedServiceLevelPeakIops){
-      [String]$uri  += "&assigned_performance_service_level.peak_iops=$AssignedServiceLevelPeakIops"
-      [Bool]$isQuery = $True
+      [String]$uri += "&assigned_performance_service_level.peak_iops=$AssignedServiceLevelPeakIops"
+      [Bool]$query  = $True
    }
    If($EfficiencyPolicyName){
-      [String]$uri  += "&assigned_storage_efficiency_policy.name=$EfficiencyPolicyName"
-      [Bool]$isQuery = $True
+      [String]$uri += "&assigned_storage_efficiency_policy.name=$EfficiencyPolicyName"
+      [Bool]$query  = $True
    }
    If($EfficiencyPolicyID){
-      [String]$uri  += "&assigned_storage_efficiency_policy.key=$FcpEnabled"
-      [Bool]$isQuery = $True
+      [String]$uri += "&assigned_storage_efficiency_policy.key=$FcpEnabled"
+      [Bool]$query  = $True
    }
    If($RecommendedServiceLevelName){
-      [String]$uri  += "&recommended_performance_service_level.name=$AssignedServiceLevelName"
-      [Bool]$isQuery = $True
+      [String]$uri += "&recommended_performance_service_level.name=$AssignedServiceLevelName"
+      [Bool]$query  = $True
    }
    If($RecommendedServiceLevelID){
-      [String]$uri  += "&recommended_performance_service_level.key=$AssignedServiceLevelID"
-      [Bool]$isQuery = $True
+      [String]$uri += "&recommended_performance_service_level.key=$AssignedServiceLevelID"
+      [Bool]$query  = $True
    }
    If($RecommendedServiceLevelExpectedIops){
-      [String]$uri  += "&recommended_performance_service_level.expected_iops=$AssignedServiceLevelExpectedIops"
-      [Bool]$isQuery = $True
+      [String]$uri += "&recommended_performance_service_level.expected_iops=$AssignedServiceLevelExpectedIops"
+      [Bool]$query  = $True
    }
    If($RecommendedServiceLevelPeakIops){
-      [String]$uri  += "&recommended_performance_service_level.peak_iops=$AssignedServiceLevelPeakIops"
-      [Bool]$isQuery = $True
+      [String]$uri += "&recommended_performance_service_level.peak_iops=$AssignedServiceLevelPeakIops"
+      [Bool]$query  = $True
    }
    If($Size){
-      [String]$uri  += "&space.size=$Size"
-      [Bool]$isQuery = $True
+      [String]$uri += "&space.size=$Size"
+      [Bool]$query  = $True
    }
    If($Query){
-      [String]$uri  += "&query=$Query"
-      [Bool]$isQuery = $True
+      [String]$uri += "&query=$Query"
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
-   If(-Not($isQuery)){
+   If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
    }Else{
       [String]$uri = $uri.Replace("?&", "?")
@@ -3909,7 +4412,7 @@ Function Get-UMVolume{
    [Bool]$query = $False;
    If($VolumeID){
       [String]$uri += "&key=$VolumeID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeType){
       [String]$uri += "&type=$VolumeType"
@@ -3917,85 +4420,88 @@ Function Get-UMVolume{
    }
    If($VolumeName){
       [String]$uri += "&name=$VolumeName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SpaceAvailableGB){
       [String]$uri += $("&space.available=" + ($SpaceAvailableGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SpaceUsedGB){
       [String]$uri += $("&space.used=" + ($SpaceUsedGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AutosizeMode){
       [String]$uri += "&autosize.mode=$AutosizeMode"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AutosizeMaximumGB){
       [String]$uri += $("&autosize.maximum=" + ($AutosizeMaximumGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($DateCreated){
       $createTime = Get-Date -Date $DateCreated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
       [String]$uri += $("&create_time=" + ($createTime.ToString()))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($State){
       [String]$uri += "&state=$State"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Style){
       [String]$uri += "&style=$Style"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeUuid){
       [String]$uri += "&uuid=$VolumeUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverID){
       [String]$uri += "&svm.key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverName){
       [String]$uri += "&svm.name=$VserverName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverUuid){
       [String]$uri += "&svm.uuid=$VserverUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AggregateID){
       [String]$uri += "&aggregate.key=$AggregateID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AggregateName){
       [String]$uri += "&aggregate.name=$AggregateName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AggregateUuid){
       [String]$uri += "&aggregate.uuid=$AggregateUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -4215,113 +4721,116 @@ Function Get-UMAggregate{
    [Bool]$query = $False;
    If($AggregateID){
       [String]$uri += "&key=$AggregateID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AggregateUuid){
       [String]$uri += "&uuid=$AggregateUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AggregateName){
       [String]$uri += "&name=$AggregateName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($State){
       [String]$uri += "&state=$State"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($LogicalUsedGB){
       [String]$uri += $("&space.efficiency.logical_used=" + ($LogicalUsedGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SavingsGB){
       [String]$uri += $("&space.efficiency.savings=" + ($SavingsGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SizeGB){
       [String]$uri += $("&space.block_storage.size=" + ($SizeGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AvailableGB){
       [String]$uri += $("&space.block_storage.available=" + ($AvailableGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($UsedGB){
       [String]$uri += $("&space.block_storage.used=" + ($UsedGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($EncryptionEnabled){
       [String]$uri += "&data_encryption.software_encryption_enabled=$EncryptionEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SnaplockType){
       [String]$uri += "&snaplock_type=$SnaplockType"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AggregateType){
       [String]$uri += "&type=$AggregateType"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($DateCreated){
       $createTime = Get-Date -Date $DateCreated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
       [String]$uri += $("&create_time=" + ($createTime.ToString()))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($RaidSize){
       [String]$uri += "&block_storage.primary.raid_size=$RaidSize"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($RaidType){
       [String]$uri += "&block_storage.primary.raid_type=$RaidType"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($MirrorState){
       [String]$uri += "&block_storage.mirror.state=$MirrorState"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($MirrorEnabled){
       [String]$uri += "&block_storage.mirror.enabled=$MirrorEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($HybridCacheEnabled){
       [String]$uri += "&block_storage.hybrid_cache.enabled=$HybridCacheEnabled"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($HybridCacheSizeGB){
       [String]$uri += $("&block_storage.hybrid_cache.size=" + ($HybridCacheSizeGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NodeID){
       [String]$uri += "&node.key=$NodeID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NodeName){
       [String]$uri += "&node.name=$NodeName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($NodeUuid){
       [String]$uri += "&node.uuid=$NodeUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -4415,48 +4924,51 @@ Function Get-UMQoSPolicy{
    [Bool]$query = $False;
    If($QoSPolicyID){
       [String]$uri += "&key=$VolumeID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($QoSPolicyUuid){
       [String]$uri += "&uuid=$QoSPolicyUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($MinimumIops){
       [String]$uri += "&adaptive.absolute_min_iops=$MinimumIops"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverID){
       [String]$uri += "&svm.key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverName){
       [String]$uri += "&svm.name=$VserverName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverUuid){
       [String]$uri += "&svm.uuid=$VserverUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -4559,11 +5071,11 @@ Function Get-UMQtree{
    [Bool]$query = $False;
    If($QtreeID){
       [String]$uri += "&key=$QtreeID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($QtreeName){
       [String]$uri += "&name=$QtreeName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($QtreeUuid){
       [String]$uri += "&uuid=$QtreeUuid"
@@ -4571,52 +5083,55 @@ Function Get-UMQtree{
    }
    If($SecurityStyle){
       [String]$uri += "&security_style=$SecurityStyle"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterID){
       [String]$uri += "&cluster.key=$ClusterID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterName){
       [String]$uri += "&cluster.name=$ClusterName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ClusterUuid){
       [String]$uri += "&cluster.uuid=$ClusterUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverID){
       [String]$uri += "&svm.key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverName){
       [String]$uri += "&svm.name=$VserverName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VserverUuid){
       [String]$uri += "&svm.uuid=$VserverUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeID){
       [String]$uri += "&volume.key=$VserverID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeName){
       [String]$uri += "&volume.name=$VolumeName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($VolumeUuid){
       [String]$uri += "&volume.uuid=$VolumeUuid"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
-   If($Offset){
+   If($Offset -ne 0){
       [String]$uri += "&offset=$Offset"
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
+      [Bool]$query  = $True
    }
-   If($MaxRecords){
+   If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
+      [Bool]$query  = $True
    }
    If(-Not($query)){
       [String]$uri = $uri.SubString(0, ($uri.Length -1))
@@ -4716,43 +5231,43 @@ Function Get-UMServiceLevel{
    [Bool]$query = $False;
    If($ServiceLevelID){
       [String]$uri += "&key=$ServiceLevelID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ServiceLevelName){
       [String]$uri += "&name=$ServiceLevelName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Description){
       [String]$uri += "&description=$Description"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($AbsoluteMinimumIops){
       [String]$uri += "&iops.absolute_min_iops=$AbsoluteMinimumIops"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ExpectedIopsTB){
       [String]$uri += "&iops.expected_iops_per_tb=$ExpectedIopsTB"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($PeakIopsTB){
       [String]$uri += "&iops.peak_iops_per_tb=$PeakIopsTB"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($PeakIopsAllocationPolicy){
       [String]$uri += "&iops.peak_iops_allocation_policy=$PeakIopsAllocationPolicy"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($LatencyExcepted){
       [String]$uri += "&latency.excepted=$LatencyExcepted"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SystemDefined){
       [String]$uri += "&system_defined=$SystemDefined"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SpaceUsedGB){
       [String]$uri += $("&space.used=" + $($SpaceUsedGB * (1024 * 1024 * 1024)))
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($WorkloadCount){
       [String]$uri += "&workload_count=$WorkloadCount"
@@ -5032,31 +5547,31 @@ Function Get-UMEfficiencyPolicy{
    [Bool]$query = $False;
    If($PolicyID){
       [String]$uri += "&key=$PolicyID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($PolicyName){
       [String]$uri += "&name=$PolicyName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($SystemDefined){
       [String]$uri += "&system_defined=$SystemDefined"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ThinProvisioned){
       [String]$uri += "&space_thin_provisioned=$ThinProvisioned"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($WorkloadCount){
       [String]$uri += "&workload_count=$WorkloadCount"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Compression){
       [String]$uri += "&compression=$Compression"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($Deduplication){
       [String]$uri += "&deduplication=$Deduplication"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($DateCreated){
       $createTime   = Get-Date -Date $DateCreated -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
@@ -5202,7 +5717,7 @@ Function Get-UMAlert{
    }
    If($MaxRecords -ge 1){
       [String]$uri += "&max_records=$MaxRecords"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
@@ -5404,11 +5919,11 @@ Function Get-UMScript{
    [Bool]$query = $False;
    If($ScriptID){
       [String]$uri += "&key=$ScriptID"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($ScriptName){
       [String]$uri += "&name=$ScriptName"
-      [Bool]$query = $True
+      [Bool]$query  = $True
    }
    If($OrderBy){
       [String]$uri += "&order_by=$OrderBy"
