@@ -5795,3 +5795,112 @@ Function Get-UMAggregateCapability{
    Return $response;
 }#'End Function Get-UMAggregateCapability.
 #'------------------------------------------------------------------------------
+Function Get-UMGateway{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $False, HelpMessage = "The Gateway UUID")]
+      [String]$GatewayID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Gateway IP Address")]
+      [String]$GatewayIPAddress,
+      [Parameter(Mandatory = $False, HelpMessage = "The Gateway Type")]
+      [String]$GatewayType,
+      [Parameter(Mandatory = $False, HelpMessage = "The Gateway Name")]
+      [String]$GatewayName,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Gateway.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/gateways?"
+   If($GatewayID){
+      [String]$uri += "&uuid=$GatewayID"
+   }
+   If($GatewayIPAddress){
+      [String]$uri += "&ip_address=$GatewayIPAddress"
+   }
+   If($GatewayType){
+      [String]$uri += "&type=$GatewayType"
+   }
+   If($GatewayName){
+      [String]$uri += "&name=$GatewayName"
+   }
+   If($uri.EndsWith("?")){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Gateway.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Gateway on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Gateway on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMGateway.
+#'------------------------------------------------------------------------------
+Function Get-UMGatewayPath{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Datasoure UUID")]
+      [String]$DatasourceID,
+      [Parameter(Mandatory = $True, HelpMessage = "The API Path")]
+      [String]$ApiPath,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/hal+json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Gateway.
+   #'---------------------------------------------------------------------------
+   If($ApiPath.StartsWith("/")){
+      [String]$ApiPath = $ApiPath.Substring(1)
+   }
+   [String]$uri = "https://$Server/api/gateways/$DatasourceID/$ApiPath"
+   If($VserverName){
+      $headers.Add("X-Dot-SVM-Name", $VserverName)
+   }
+   If($VserverID){
+      $headers.Add("X-Dot-SVM-UUID", $VserverID)
+   }
+   If($uri.EndsWith("?")){
+      [String]$uri = $uri.SubString(0, ($uri.Length -1))
+   }Else{
+      [String]$uri = $uri.Replace("?&", "?")
+   }
+   #'---------------------------------------------------------------------------
+   #'Enumerate the Gateway API Path.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated Gateway on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating Gateway on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMGatewayPath.
+#'------------------------------------------------------------------------------
