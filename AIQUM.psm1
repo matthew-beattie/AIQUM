@@ -5904,3 +5904,99 @@ Function Get-UMGatewayPath{
    Return $response;
 }#'End Function Get-UMGatewayPath.
 #'------------------------------------------------------------------------------
+Function New-UMGatewayItem{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Datasoure UUID")]
+      [String]$DatasourceID,
+      [Parameter(Mandatory = $True, HelpMessage = "The API Path")]
+      [String]$ApiPath,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver UUID")]
+      [String]$VserverID,
+      [Parameter(Mandatory = $False, HelpMessage = "The Vserver Name")]
+      [String]$VserverName,
+      [Parameter(Mandatory = $False, HelpMessage = "The JSON configuration to create")]
+      [String]$Item,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/hal+json"
+      "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Set the Gateway API Path URI.
+   #'---------------------------------------------------------------------------
+   If($ApiPath.StartsWith("/")){
+      [String]$ApiPath = $ApiPath.Substring(1)
+   }
+   [String]$uri = "https://$Server/api/gateways/$DatasourceID/$ApiPath"
+   If($VserverName){
+      $headers.Add("X-Dot-SVM-Name", $VserverName)
+   }
+   If($VserverID){
+      $headers.Add("X-Dot-SVM-UUID", $VserverID)
+   }
+   #'---------------------------------------------------------------------------
+   #'Create the Storage Item via the Gateway API.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method POST -Body $Item -Headers $headers -ErrorAction Stop
+      Write-Host "Created Gateway Item on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed Creating Gateway Item on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function New-UMGatewayObject.
+#'------------------------------------------------------------------------------
+Function Set-UMGatewayItem{
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Datasoure UUID")]
+      [String]$DatasourceID,
+      [Parameter(Mandatory = $True, HelpMessage = "The API Path")]
+      [String]$ApiPath,
+      [Parameter(Mandatory = $False, HelpMessage = "The JSON configuration to create")]
+      [String]$Item,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $auth    = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Credential.UserName + ':' + $Credential.GetNetworkCredential().Password))
+   $headers = @{
+      "Authorization" = "Basic $auth"
+      "Accept"        = "application/hal+json"
+      "Content-Type"  = "application/json"
+   }
+   #'---------------------------------------------------------------------------
+   #'Set the Gateway API Path URI.
+   #'---------------------------------------------------------------------------
+   If($ApiPath.StartsWith("/")){
+      [String]$ApiPath = $ApiPath.Substring(1)
+   }
+   [String]$uri = "https://$Server/api/gateways/$DatasourceID/$ApiPath"
+   #'---------------------------------------------------------------------------
+   #'Set the Storage configuration via the Gateway API.
+   #'---------------------------------------------------------------------------
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method PATCH -Body $Item -Headers $headers -ErrorAction Stop
+      Write-Host "Set Gateway Item on Server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed Setting Gateway Item on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Set-UMGatewayObject.
+#'------------------------------------------------------------------------------
