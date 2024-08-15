@@ -39,6 +39,33 @@ Function Get-UMAuthorization{
    Return $headers;
 }#'End Function Get-UMAuthorization
 #'------------------------------------------------------------------------------
+Function Get-UMSystemInfo{
+   [CmdletBinding()]
+   Param(
+      [Parameter(Mandatory = $True, HelpMessage = "The AIQUM server Hostname, FQDN or IP Address")]
+      [ValidateNotNullOrEmpty()]
+      [String]$Server,
+      [Parameter(Mandatory = $True, HelpMessage = "The Credential to authenticate to AIQUM")]
+      [ValidateNotNullOrEmpty()]
+      [System.Management.Automation.PSCredential]$Credential
+   )
+   #'---------------------------------------------------------------------------
+   #'Set the authentication header to connect to AIQUM.
+   #'---------------------------------------------------------------------------
+   $headers = Get-UMAuthorization -Credential $Credential
+   #'---------------------------------------------------------------------------
+   #'Enumerate the System Information.
+   #'---------------------------------------------------------------------------
+   [String]$uri = "https://$Server/api/management-server/system"
+   Try{
+      $response = Invoke-RestMethod -Uri $uri -Method GET -Headers $headers -ErrorAction Stop
+      Write-Host "Enumerated system information on server ""$Server"" using URI ""$uri"""
+   }Catch{
+      Write-Warning -Message $("Failed enumerating system on Server ""$Server"" using URI ""$uri"". Error " + $_.Exception.Message + ". Status Code " + $_.Exception.Response.StatusCode.value__)
+   }
+   Return $response;
+}#'End Function Get-UMSystemInfo.
+#'------------------------------------------------------------------------------
 Function Get-UMBackupConfig{
    [CmdletBinding()]
    Param(
